@@ -370,39 +370,6 @@
             line-height: 1.8;
             margin-bottom: 15px;
         }
-        .code-lines::-webkit-scrollbar {
-            width: 4px;
-        }
-        .code-lines::-webkit-scrollbar-thumb {
-            background: var(--accent);
-        }
-        .code-line {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-        .code-line.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .code-line .bracket {
-            color: var(--warning);
-        }
-        .code-line .string {
-            color: var(--info);
-        }
-        .code-line .number {
-            color: var(--danger);
-        }
-        .code-line .keyword {
-            color: #ff44ff;
-        }
-        .code-line .comment {
-            color: var(--text-dim);
-        }
-        .code-line .success {
-            color: var(--accent-light);
-        }
         .progress-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -473,7 +440,6 @@
             border-right: 2px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 0;
             background: rgba(0, 0, 0, 0.3);
             overflow-y: auto;
             transition: transform 0.3s ease;
@@ -541,11 +507,6 @@
             color: var(--text-dim);
             background: rgba(0, 0, 0, 0.2);
             min-height: 50px;
-        }
-        .top-bar .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
         }
         .content-area {
             flex: 1;
@@ -640,7 +601,6 @@
             color: var(--accent-light);
             text-transform: uppercase;
             font-size: 0.7rem;
-            letter-spacing: 2px;
         }
         .table td {
             padding: 10px;
@@ -671,6 +631,8 @@
             max-width: 95vw;
             max-height: 90vh;
             overflow-y: auto;
+        }
+        .modal.anim-in {
             animation: drawWindow 0.4s ease-out;
         }
         @keyframes drawWindow {
@@ -744,10 +706,60 @@
             border: 2px solid var(--accent-light);
             clip-path: polygon(20% 0, 80% 0, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 0 20%);
         }
-        .chat-container {
+        .chat-layout {
+            display: flex;
+            gap: 15px;
+            height: 500px;
+        }
+        .chat-user-list {
+            width: 200px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.4);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .chat-user-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-user-list::-webkit-scrollbar-thumb {
+            background: var(--accent);
+        }
+        .chat-user-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+        }
+        .chat-user-item:hover {
+            background: rgba(0, 40, 0, 0.3);
+            color: var(--accent);
+        }
+        .chat-user-item.active {
+            background: rgba(0, 40, 0, 0.5);
+            color: var(--accent);
+            border-left: 3px solid var(--accent);
+        }
+        .chat-user-item .online-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            flex-shrink: 0;
+        }
+        .chat-user-item .online-dot.online {
+            background: var(--accent-light);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        .chat-main {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            height: 400px;
             border: 1px solid var(--border);
             background: rgba(0, 0, 0, 0.4);
         }
@@ -778,6 +790,10 @@
         .chat-msg .time {
             color: var(--text-dim);
             font-size: 0.6rem;
+        }
+        .chat-msg.private {
+            border-left: 2px solid var(--warning);
+            padding-left: 8px;
         }
         .chat-input-row {
             display: flex;
@@ -860,6 +876,7 @@
             gap: 10px;
             margin-bottom: 15px;
             flex-wrap: wrap;
+            align-items: center;
         }
         .badge {
             display: inline-block;
@@ -916,75 +933,25 @@
             .sidebar-nav {
                 padding-top: 60px;
             }
-            .nav-item {
-                padding: 14px 15px;
-                font-size: 0.75rem;
-                letter-spacing: 1px;
-                border-left: none;
-                border-bottom: 2px solid transparent;
-            }
-            .nav-item.active {
-                border-left-color: transparent;
-                border-bottom-color: var(--accent);
-            }
-            .login-window {
-                width: 95vw;
-            }
-            .progress-grid {
-                grid-template-columns: 1fr;
-            }
-            .form-row {
+            .chat-layout {
                 flex-direction: column;
+                height: auto;
             }
-            .sound-panel {
-                bottom: 10px;
-                right: 10px;
-                padding: 6px 10px;
-            }
-            .sound-slider {
-                width: 50px;
-            }
-            .a4-sheet {
-                padding: 15px;
-            }
-            .a4-field {
-                flex-direction: column;
-            }
-            .a4-label {
+            .chat-user-list {
                 width: 100%;
-                margin-bottom: 2px;
+                max-height: 150px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                padding: 5px;
             }
-            .chat-container {
-                height: 300px;
-            }
-            .top-bar {
-                padding-left: 55px;
-            }
-            .top-bar .user-info {
-                gap: 8px;
+            .chat-user-item {
+                padding: 6px 10px;
                 font-size: 0.6rem;
+                border: 1px solid var(--border);
             }
-            .btn.small {
-                padding: 8px 10px;
-                font-size: 0.6rem;
-            }
-            .modal {
-                width: 98vw;
-                max-height: 95vh;
-            }
-            .panel-inner {
-                padding: 12px;
-            }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .logo-icon {
-                animation: none;
-            }
-            .logo-text {
-                animation: none;
-            }
-            body.animating {
-                animation: none;
+            .chat-main {
+                min-height: 300px;
             }
         }
     </style>
@@ -1028,7 +995,7 @@
     </div>
 
     <div class="modal-overlay" id="loginModal">
-        <div class="panel modal"><div class="panel-inner">
+        <div class="panel modal anim-in"><div class="panel-inner">
             <div class="modal-title">АВТОРИЗАЦИЯ</div>
             <div id="loginError" style="text-align:center;color:var(--danger);min-height:20px;font-size:0.7rem;letter-spacing:2px;margin-bottom:15px;"></div>
             <select class="select w-full" id="memberSelect" style="margin-bottom:15px;"><option value="">— ВЫБЕРИТЕ ПЕРСОНАЖА —</option></select>
@@ -1111,6 +1078,11 @@
             failedAttempts: 0,
             adminPassword: 'admin123',
             chatListener: null,
+            activeChatRef: null,
+            privateChatId: null,
+            privateChatUser: null,
+            privateChatListener: null,
+            onlineUsers: {},
         };
 
         // ============ АУДИО ============
@@ -1158,7 +1130,6 @@
             sidebar = $('#sidebar'),
             hamburgerBtn = $('#hamburgerBtn');
 
-        // ============ ГАМБУРГЕР-МЕНЮ ============
         hamburgerBtn.addEventListener('click', () => { sidebar.classList.toggle('open');
             sfxClick(); });
         document.addEventListener('click', (e) => { if (!sidebar.contains(e.target) && e.target !== hamburgerBtn && sidebar
@@ -1229,6 +1200,10 @@
             setTimeout(() => { t.style.opacity = '0';
                 t.style.transition = 'opacity 0.3s';
                 setTimeout(() => t.remove(), 300); }, d); }
+
+        function closeModalFast(modal) { modal.style.display = 'none';
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 50); }
 
         // ============ АНИМАЦИЯ ВХОДА ============
         const codeLinesData = [{ text: '<span class="comment">// S.R.V.L. UNIFIED TERMINAL OS v2.0</span>', delay: 300,
@@ -1325,14 +1300,15 @@
         $('#accessBtn').addEventListener('click', () => { if (animComplete) openLoginModal(); });
         $('#skipBtn').addEventListener('click', skipAnimation);
 
-        // ============ МОДАЛЬНОЕ ОКНО ВХОДА ============
         function openLoginModal() { glitchOverlay.classList.add('crash');
             sfxError();
             setTimeout(() => { glitchOverlay.classList.remove('crash');
                 loginModal.classList.add('active');
+                loginModal.style.display = 'flex';
                 loadMembersForLogin(); }, 500); }
 
-        function closeLoginModal() { loginModal.classList.remove('active');
+        function closeLoginModal() { loginModal.style.display = 'none';
+            loginModal.classList.remove('active');
             $('#loginError').textContent = '';
             $('#passwordInput').value = '';
             $('#loginHint').textContent = '';
@@ -1349,6 +1325,7 @@
                     $('#loginHint').textContent = 'Используйте DEV-вход'; } } catch (e) { console.error(e);
                 $('#loginError').textContent = 'ОШИБКА ПОДКЛЮЧЕНИЯ'; } }
         $('#loginCancelBtn').addEventListener('click', closeLoginModal);
+        loginModal.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
         $('#loginBtn').addEventListener('click', async () => { const selId = $('#memberSelect').value; const pw = $(
                 '#passwordInput').value.trim(); if (state.lockoutUntil && Date.now() < state.lockoutUntil) { const rem = Math
                     .ceil((state.lockoutUntil - Date.now()) / 1000);
@@ -1390,7 +1367,6 @@
                         $('#loginError').textContent = 'БЛОКИРОВКА 15 МИН.'; } } } catch (e) { console.error(e);
                 $('#loginError').textContent = 'ОШИБКА ТЕРМИНАЛА'; } });
 
-        // ============ ВХОД В ИНТЕРФЕЙС ============
         function enterMainInterface() { loginScreen.classList.add('hidden');
             mainInterface.classList.add('active');
             document.body.classList.remove('animating');
@@ -1399,33 +1375,62 @@
                 `${state.currentUser.role} | ${state.currentUser.profession||'Н/Д'}`; if (state.isAdmin || state.isDeveloper) {
                 $('#adminNavItem').style.display = 'flex'; }
             updateOnlineStatus();
+            listenOnlineUsers();
             navigateTo('status'); }
 
         function updateOnlineStatus() { if (state.currentUser) { const userRef = ref(db,
                     `online/${state.currentUser.id}`);
-                set(userRef, { name: state.currentUser.name, lastSeen: Date.now() }).catch(() => {});
-                window.addEventListener('beforeunload', () => { remove(userRef).catch(() => {}); }); } }
-        $('#logoutBtn').addEventListener('click', () => { if (state.currentUser && state.currentUser.id !== 'dev' && state
-                .currentUser.id !== 'admin') { remove(ref(db, `online/${state.currentUser.id}`)).catch(() => {}); } if (state
-                .chatListener) { off(state.chatListener);
-                state.chatListener = null; }
-            state.currentUser = null;
-            state.isAdmin = false;
-            state.isDeveloper = false;
-            mainInterface.classList.remove('active');
-            loginScreen.classList.remove('hidden');
-            document.body.classList.add('animating');
-            $('#adminNavItem').style.display = 'none';
-            $('#currentUser').textContent = 'ГОСТЬ';
-            closeLoginModal();
-            startAnimation(); });
+                set(userRef, { name: state.currentUser.name, lastSeen: Date.now() }).catch(() => {}); } }
 
-        // ============ НАВИГАЦИЯ ============
+        function listenOnlineUsers() {
+            const onlineRef = ref(db, 'online');
+            onValue(onlineRef, (snap) => {
+                state.onlineUsers = {};
+                if (snap.exists()) {
+                    const data = snap.val();
+                    Object.keys(data).forEach(k => {
+                        if (Date.now() - data[k].lastSeen < 120000) {
+                            state.onlineUsers[k] = data[k];
+                        }
+                    });
+                }
+                if (state.currentPage === 'chat') updateChatUserList();
+            });
+        }
+
+        $('#logoutBtn').addEventListener('click', () => {
+            if (state.currentUser && state.currentUser.id !== 'dev' && state.currentUser.id !== 'admin') {
+                remove(ref(db, `online/${state.currentUser.id}`)).catch(() => {});
+            }
+            if (state.chatListener) { off(state.chatListener);
+                state.chatListener = null; }
+            if (state.privateChatListener) { off(state.privateChatListener);
+                state.privateChatListener = null; }
+            state.activeChatRef = null;
+            state.privateChatId = null;
+            state.privateChatUser = null;
+            location.reload();
+        });
+
+        const guestAllowedPages = ['status', 'applications'];
+        const authRequiredPages = ['data', 'protocol', 'registr', 'dossiers', 'laboratory', 'medbay', 'armory', 'archive',
+            'contacts', 'mail', 'chat', 'admin'
+        ];
         const pages = { status: 'СТАТУС', data: 'ДАННЫЕ', protocol: 'ПРОТОКОЛ', registr: 'РЕГИСТР', applications: 'АНКЕТЫ',
             dossiers: 'ДОСЬЕ', laboratory: 'ЛАБОРАТОРИЯ', medbay: 'МЕДОТСЕК', armory: 'КХО', archive: 'АРХИВ',
             contacts: 'СВЯЗЬ', mail: 'ПОЧТА', chat: 'ЧАТ', admin: 'АДМИН' };
 
         function navigateTo(page) {
+            if (!state.currentUser && authRequiredPages.includes(page)) {
+                contentArea.innerHTML =
+                    '<div style="text-align:center;padding:40px;color:var(--warning);"><p style="font-size:1.2rem;letter-spacing:3px;">ДОСТУП ЗАПРЕЩЁН</p><p style="color:var(--text-dim);">ВОЙДИТЕ ДЛЯ ДОСТУПА К ЭТОМУ РАЗДЕЛУ</p></div>';
+                $('#currentPageTitle').textContent = pages[page] || page.toUpperCase();
+                return;
+            }
+            if (page === 'admin' && !state.isAdmin && !state.isDeveloper) { toast('ДОСТУП ЗАПРЕЩЁН'); return; }
+            if (page !== 'chat') { state.privateChatId = null;
+                state.privateChatUser = null; if (state.privateChatListener) { off(state.privateChatListener);
+                    state.privateChatListener = null; } }
             state.currentPage = page;
             $('#currentPageTitle').textContent = pages[page] || page.toUpperCase();
             document.title = `S.R.V.L. // ${pages[page]||''}`;
@@ -1436,12 +1441,9 @@
             renderPage(page);
         }
         $('#sidebarNav').addEventListener('click', (e) => { const item = e.target.closest('.nav-item'); if (!item) return;
-            const page = item.dataset.page; if (page === 'admin' && !state.isAdmin && !state.isDeveloper) { toast(
-                'ДОСТУП ЗАПРЕЩЁН'); return; }
             sfxClick();
-            navigateTo(page); });
+            navigateTo(item.dataset.page); });
 
-        // ============ ЗАГРУЗКА УЧАСТНИКОВ (С КЕШЕМ) ============
         async function loadMembers(force = false) { const now = Date.now(); if (!force && state.membersLoaded && (now - state
                     .membersLastLoad) < 300000) { return state.members; } try { const snap = await get(ref(db, 'members'));
                 state.members = []; if (snap.exists()) { const data = snap.val();
@@ -1449,7 +1451,6 @@
                 state.membersLoaded = true;
                 state.membersLastLoad = now; } catch (e) { console.error(e); } return state.members; }
 
-        // ============ РЕНДЕР СТРАНИЦ (БЕЗ КЕША, С ДЕЛЕГИРОВАНИЕМ) ============
         async function renderPage(page) {
             contentArea.innerHTML =
                 '<div style="text-align:center;padding:40px;color:var(--text-dim);">ЗАГРУЗКА...</div>';
@@ -1500,63 +1501,51 @@
                     default:
                         contentArea.innerHTML = '<p>РАЗДЕЛ НЕ НАЙДЕН</p>';
                 }
-            } catch (e) {
-                console.error(e);
+            } catch (e) { console.error(e);
                 contentArea.innerHTML =
-                    '<div style="text-align:center;padding:40px;color:var(--danger);">ТЕРМИНАЛ НЕДОСТУПЕН</div>';
-            }
-            // Навешиваем делегированные обработчики для страницы
+                    '<div style="text-align:center;padding:40px;color:var(--danger);">ТЕРМИНАЛ НЕДОСТУПЕН</div>'; }
             attachPageDelegates(page);
         }
 
-        // ============ ДЕЛЕГИРОВАННЫЕ ОБРАБОТЧИКИ ============
         function attachPageDelegates(page) {
-            // Удаляем старый обработчик
             contentArea.removeEventListener('click', contentClickHandler);
-            // Вешаем новый
             contentArea.addEventListener('click', contentClickHandler);
 
             function contentClickHandler(e) {
                 const btn = e.target.closest('button');
                 if (!btn) return;
-
-                // Редакторы страниц
                 if (btn.id === 'editStatusBtn') openEditor('status', 'СТАТУС');
                 if (btn.id === 'editDataBtn') openEditor('data', 'ДАННЫЕ');
                 if (btn.id === 'editProtocolBtn') openEditor('protocol', 'ПРОТОКОЛ');
                 if (btn.id === 'editContactsBtn') openEditor('contacts', 'СВЯЗЬ');
-
-                // Анкета
-                if (btn.id === 'newAppBtn') openFullApplicationForm();
-
-                // Досье
-                if (btn.classList.contains('editDossierBtn')) {
-                    const id = btn.dataset.id;
-                    get(ref(db, `dossiers/${id}`)).then(snap => { if (snap.exists()) openDossierEditor(id, snap
-                            .val()); });
-                }
-
-                // Записи (ЛАБ/МЕД/КХО)
-                if (btn.id === 'addRecordBtn') {
-                    const section = state.currentPage;
-                    const titles = { laboratory: 'ЛАБОРАТОРИЯ', medbay: 'МЕДОТСЕК', armory: 'КХО' };
-                    openRecordForm(section, titles[section] || section.toUpperCase());
-                }
-
-                // Архив
-                if (btn.id === 'uploadArchiveBtn') {
-                    const name = prompt('НАЗВАНИЕ ФАЙЛА:');
-                    const url = prompt('ССЫЛКА НА ФАЙЛ:');
-                    if (name && url) {
-                        push(ref(db, 'archive'), { name, url, uploadedBy: state.currentUser?.name || 'Гость',
-                            uploadedAt: Date.now() });
+                if (btn.id === 'newAppBtn' || btn.id === 'guestAppBtn') openFullApplicationForm();
+                if (btn.classList.contains('editDossierBtn')) { const id = btn.dataset.id;
+                    get(ref(db, `dossiers/${id}`)).then(snap => { if (snap.exists()) openDossierEditor(id, snap.val()); }); }
+                if (btn.id === 'addRecordBtn') { const section = state.currentPage; const titles = { laboratory: 'ЛАБОРАТОРИЯ',
+                        medbay: 'МЕДОТСЕК', armory: 'КХО' };
+                    openRecordForm(section, titles[section] || section.toUpperCase()); }
+                if (btn.id === 'uploadArchiveBtn') { const name = prompt('НАЗВАНИЕ ФАЙЛА:'); const url = prompt(
+                    'ССЫЛКА НА ФАЙЛ:'); if (name && url) { push(ref(db, 'archive'), { name, url, uploadedBy: state
+                            .currentUser?.name || 'Гость', uploadedAt: Date.now() });
                         toast('ФАЙЛ ДОБАВЛЕН');
-                        renderArchive();
-                    }
-                }
-
-                // Почта
+                        renderArchive(); } }
                 if (btn.id === 'newMailBtn') openMailForm();
+                if (btn.id === 'chatSendBtn') sendChatMessage();
+                if (btn.classList.contains('chat-user-item')) {
+                    const uid = btn.dataset.userId;
+                    if (uid === 'general') {
+                        state.privateChatId = null;
+                        state.privateChatUser = null;
+                        if (state.privateChatListener) { off(state.privateChatListener);
+                            state.privateChatListener = null; }
+                        switchToGeneralChat();
+                    } else {
+                        state.privateChatUser = state.members.find(m => m.id === uid);
+                        state.privateChatId = [state.currentUser.id, uid].sort().join('-');
+                        switchToPrivateChat(uid);
+                    }
+                    updateChatUserList();
+                }
             }
         }
 
@@ -1569,9 +1558,10 @@
                         .val()).sort((a, b) => a.date - b.date).slice(0, 5);
                     eventsHtml = evts.map(e =>
                         `<div class="card"><div class="card-title">📅 ${e.title||'СОБЫТИЕ'}</div><div class="card-text">${new Date(e.date).toLocaleDateString()} — ${e.desc||''}</div></div>`
-                        ).join(''); } } catch (e) {}
+                        ).join(''); } } catch (e) {} const guestBtn = !state.currentUser ?
+                '<br><button class="btn" id="guestAppBtn">+ ПОДАТЬ АНКЕТУ</button>' : '';
             contentArea.innerHTML =
-                `<h1 class="section-title">СТАТУС</h1><div class="card"><div class="card-title">АКТИВНОСТЬ КЛАНА</div><div class="card-text">${content||'Информация пока не добавлена.'}</div></div>${eventsHtml?`<h3 style="color:var(--accent);letter-spacing:3px;margin-top:20px;">БЛИЖАЙШИЕ СОБЫТИЯ</h3>${eventsHtml}`:''}${state.isAdmin||state.isDeveloper?'<button class="btn" id="editStatusBtn">✎ РЕДАКТИРОВАТЬ</button>':''}`;
+                `<h1 class="section-title">СТАТУС</h1><div class="card"><div class="card-title">АКТИВНОСТЬ КЛАНА</div><div class="card-text">${content||'Информация пока не добавлена.'}</div></div>${eventsHtml?`<h3 style="color:var(--accent);letter-spacing:3px;margin-top:20px;">БЛИЖАЙШИЕ СОБЫТИЯ</h3>${eventsHtml}`:''}${state.isAdmin||state.isDeveloper?'<button class="btn" id="editStatusBtn">✎ РЕДАКТИРОВАТЬ</button>':''}${guestBtn}`;
         }
         async function renderData() { const content = await getPageData('data');
             contentArea.innerHTML =
@@ -1582,13 +1572,30 @@
                 `<h1 class="section-title">ПРОТОКОЛ</h1><div class="card"><div class="card-title">ПРАВИЛА</div><div class="card-text">${content||'Правила пока не добавлены.'}</div></div>${state.isAdmin||state.isDeveloper?'<button class="btn" id="editProtocolBtn">✎ РЕДАКТИРОВАТЬ</button>':''}`;
         }
         async function renderRegistr() { await loadMembers(); const active = state.members.filter(m => m.status === 'active');
-            let rows = active.map(m =>
-                `<tr><td>${m.name}</td><td>${m.role||'Н/Д'}</td><td>${m.profession||'Н/Д'}</td><td>${m.department||'Н/Д'}</td></tr>`
-                ).join('');
-            contentArea.innerHTML =
-                `<h1 class="section-title">РЕГИСТР</h1><div style="overflow-x:auto;"><table class="table"><thead><tr><th>Имя</th><th>Доступ</th><th>Профессия</th><th>Отдел</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Нет участников</td></tr>'}</tbody></table></div>`; }
+            const roles = [...new Set(active.map(m => m.role).filter(Boolean))];
+            const depts = [...new Set(active.map(m => m.department).filter(Boolean))];
+            let html = '<h1 class="section-title">РЕГИСТР</h1>';
+            html += '<div class="filter-row">';
+            html += '<select class="select" id="filterRole"><option value="all">ВСЕ РОЛИ</option>' + roles.map(r =>
+                `<option value="${r}">${r.toUpperCase()}</option>`).join('') + '</select>';
+            html += '<select class="select" id="filterDept"><option value="all">ВСЕ ОТДЕЛЫ</option>' + depts.map(d =>
+                `<option value="${d}">${d.toUpperCase()}</option>`).join('') + '</select>';
+            html += '</div>';
+            html +=
+                '<div style="overflow-x:auto;"><table class="table"><thead><tr><th>Имя</th><th>Доступ</th><th>Профессия</th><th>Отдел</th></tr></thead><tbody id="registrBody"></tbody></table></div>';
+            contentArea.innerHTML = html;
+            const filterAndRender = () => { const roleFilter = $('#filterRole')?.value || 'all'; const deptFilter = $(
+                    '#filterDept')?.value || 'all'; let filtered = active; if (roleFilter !== 'all') filtered = filtered
+                    .filter(m => m.role === roleFilter); if (deptFilter !== 'all') filtered = filtered.filter(m => m
+                    .department === deptFilter); const tbody = $('#registrBody'); if (tbody) tbody.innerHTML = filtered.map(
+                    m =>
+                    `<tr><td>${m.name}</td><td>${m.role||'Н/Д'}</td><td>${m.profession||'Н/Д'}</td><td>${m.department||'Н/Д'}</td></tr>`
+                    ).join('') || '<tr><td colspan="4">Нет результатов</td></tr>'; };
+            filterAndRender();
+            $('#filterRole')?.addEventListener('change', filterAndRender);
+            $('#filterDept')?.addEventListener('change', filterAndRender); }
         async function renderApplications() { if (!state.currentUser) { contentArea.innerHTML =
-                    '<p>ВОЙДИТЕ ЧТОБЫ ПОДАТЬ АНКЕТУ</p>'; return; } let html =
+                    '<h1 class="section-title">АНКЕТЫ</h1><p>ВОЙДИТЕ ЧТОБЫ ПОДАТЬ АНКЕТУ</p>'; return; } let html =
                 '<h1 class="section-title">АНКЕТЫ</h1><button class="btn" id="newAppBtn">+ ПОДАТЬ АНКЕТУ</button><br><br>'; try {
                 const snap = await get(ref(db, 'applications')); if (snap.exists()) { const data = snap.val();
                     Object.keys(data).forEach(k => { const a = data[k];
@@ -1599,8 +1606,9 @@
 
         function openFullApplicationForm() { const modal = document.createElement('div');
             modal.className = 'modal-overlay active';
+            modal.style.display = 'flex';
             modal.innerHTML = `
-        <div class="panel modal" style="width:750px;"><div class="panel-inner">
+        <div class="panel modal anim-in" style="width:750px;"><div class="panel-inner">
           <div class="modal-title">ПОДАЧА АНКЕТЫ</div>
           <div style="color:var(--accent);letter-spacing:2px;margin-bottom:15px;font-size:0.8rem;">ОСНОВНЫЕ ДАННЫЕ</div>
           <div class="form-row"><div class="form-group"><label class="form-label">.☘️ ˖ Имя</label><input class="input w-full" id="appName"></div><div class="form-group"><label class="form-label">.☘️ ˖ Пол</label><select class="select w-full" id="appGender"><option>М</option><option>Ж</option><option>Другое</option></select></div></div>
@@ -1627,8 +1635,9 @@
           <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
         </div></div>`;
             document.body.appendChild(modal);
-            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
-            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            const closeFn = () => closeModalFast(modal);
+            modal.querySelector('.cancelModalBtn').addEventListener('click', closeFn);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeFn(); });
             modal.querySelector('#submitFullAppBtn').addEventListener('click', async () => { const fields = ['appName',
                     'appGender', 'appBirth', 'appRace', 'appPosition', 'appDepartment', 'appHeight', 'appWeight',
                     'appFeatures', 'appSkills', 'appMentor', 'appBio', 'appChar', 'appPhobias', 'appHabits',
@@ -1648,7 +1657,7 @@
                     sfxError(); return; } try { await push(ref(db, 'applications'), appData);
                     toast('АНКЕТА ОТПРАВЛЕНА');
                     sfxClick();
-                    modal.remove();
+                    closeFn();
                     renderApplications(); } catch (e) { toast('ОШИБКА ОТПРАВКИ');
                     sfxError(); } }); }
 
@@ -1683,8 +1692,9 @@
 
         function openDossierEditor(id, d) { const modal = document.createElement('div');
             modal.className = 'modal-overlay active';
+            modal.style.display = 'flex';
             modal.innerHTML = `
-        <div class="panel modal" style="width:750px;"><div class="panel-inner">
+        <div class="panel modal anim-in" style="width:750px;"><div class="panel-inner">
           <div class="modal-title">РЕДАКТИРОВАНИЕ ДОСЬЕ</div>
           <div class="form-row"><div class="form-group"><label class="form-label">Имя</label><input class="input w-full" id="editName" value="${d.name||''}"></div><div class="form-group"><label class="form-label">Пол</label><select class="select w-full" id="editGender"><option ${d.gender==='М'?'selected':''}>М</option><option ${d.gender==='Ж'?'selected':''}>Ж</option><option ${d.gender==='Другое'?'selected':''}>Другое</option></select></div></div>
           <div class="form-row"><div class="form-group"><label class="form-label">Дата рождения</label><input class="input w-full" id="editBirth" value="${d.birth||''}"></div><div class="form-group"><label class="form-label">Раса</label><input class="input w-full" id="editRace" value="${d.race||''}"></div></div>
@@ -1705,8 +1715,9 @@
           <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
         </div></div>`;
             document.body.appendChild(modal);
-            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
-            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            const closeFn = () => closeModalFast(modal);
+            modal.querySelector('.cancelModalBtn').addEventListener('click', closeFn);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeFn(); });
             modal.querySelector('#saveDossierBtn').addEventListener('click', async () => { const fields = ['editName',
                     'editGender', 'editBirth', 'editRace', 'editPosition', 'editDepartment', 'editHeight', 'editWeight',
                     'editFeatures', 'editSkills', 'editMentor', 'editBio', 'editChar', 'editPhobias', 'editHabits',
@@ -1718,7 +1729,7 @@
                 up.gender = up.gender || d.gender; try { await update(ref(db, `dossiers/${id}`), up);
                     toast('ДОСЬЕ ОБНОВЛЕНО');
                     sfxClick();
-                    modal.remove();
+                    closeFn();
                     renderDossiers(); } catch (e) { toast('ОШИБКА');
                     sfxError(); } }); }
 
@@ -1733,8 +1744,9 @@
 
         function openRecordForm(section, title) { const modal = document.createElement('div');
             modal.className = 'modal-overlay active';
+            modal.style.display = 'flex';
             modal.innerHTML = `
-        <div class="panel modal"><div class="panel-inner">
+        <div class="panel modal anim-in"><div class="panel-inner">
           <div class="modal-title">НОВАЯ ЗАПИСЬ: ${title}</div>
           <div class="form-group"><label class="form-label">Заголовок</label><input class="input w-full" id="recTitle"></div>
           <div class="form-group"><label class="form-label">Категория</label><input class="input w-full" id="recCat"></div>
@@ -1743,8 +1755,9 @@
           <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
         </div></div>`;
             document.body.appendChild(modal);
-            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
-            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            const closeFn = () => closeModalFast(modal);
+            modal.querySelector('.cancelModalBtn').addEventListener('click', closeFn);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeFn(); });
             modal.querySelector('#submitRecBtn').addEventListener('click', async () => { const rec = { title: modal
                         .querySelector('#recTitle').value, category: modal.querySelector('#recCat').value, content: modal
                         .querySelector('#recContent').value, author: state.currentUser?.name || 'Гость',
@@ -1752,7 +1765,7 @@
                         ref(db, section), rec);
                     toast('ЗАПИСЬ ДОБАВЛЕНА');
                     sfxClick();
-                    modal.remove();
+                    closeFn();
                     renderRecordSection(section, title); } catch (e) { toast('ОШИБКА');
                     sfxError(); } }); }
 
@@ -1773,8 +1786,9 @@
 
         function openEditor(section, title) { const modal = document.createElement('div');
             modal.className = 'modal-overlay active';
+            modal.style.display = 'flex';
             modal.innerHTML = `
-        <div class="panel modal"><div class="panel-inner">
+        <div class="panel modal anim-in"><div class="panel-inner">
           <div class="modal-title">РЕДАКТОР: ${title}</div>
           <textarea class="textarea w-full" id="editorContent" style="min-height:250px;"></textarea>
           <button class="btn full-width" id="saveEditorBtn" style="margin-top:15px;">■ СОХРАНИТЬ</button>
@@ -1783,20 +1797,21 @@
             document.body.appendChild(modal);
             get(ref(db, `pages/${section}`)).then(snap => { if (snap.exists()) modal.querySelector('#editorContent').value =
                     snap.val().content || ''; }).catch(() => {});
-            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
-            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            const closeFn = () => closeModalFast(modal);
+            modal.querySelector('.cancelModalBtn').addEventListener('click', closeFn);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeFn(); });
             modal.querySelector('#saveEditorBtn').addEventListener('click', async () => { try { await set(ref(db,
                             `pages/${section}`), { content: modal.querySelector('#editorContent').value, updatedAt: Date
                             .now() });
                     toast('СОХРАНЕНО');
                     sfxClick();
-                    modal.remove();
+                    closeFn();
                     renderPage(state.currentPage); } catch (e) { toast('ОШИБКА СОХРАНЕНИЯ');
                     sfxError(); } }); }
 
         // ============ ПОЧТА ============
-        async function renderMail() { if (!state.currentUser) { contentArea.innerHTML = '<p>ТОЛЬКО ДЛЯ ПЕРСОНАЖЕЙ</p>'; return; }
-            let html = '<h1 class="section-title">ПОЧТА</h1><button class="btn" id="newMailBtn">+ НОВОЕ ПИСЬМО</button><br><br>'; try {
+        async function renderMail() { if (!state.currentUser) return; let html =
+                '<h1 class="section-title">ПОЧТА</h1><button class="btn" id="newMailBtn">+ НОВОЕ ПИСЬМО</button><br><br>'; try {
                 const snap = await get(ref(db, 'mail')); if (snap.exists()) { const data = snap.val();
                     Object.keys(data).forEach(k => { const m = data[k]; if (m.to === state.currentUser.id || m.to ===
                             'all' || m.toDepartment === state.currentUser.department) { html +=
@@ -1806,8 +1821,9 @@
 
         function openMailForm() { const modal = document.createElement('div');
             modal.className = 'modal-overlay active';
+            modal.style.display = 'flex';
             modal.innerHTML = `
-        <div class="panel modal"><div class="panel-inner">
+        <div class="panel modal anim-in"><div class="panel-inner">
           <div class="modal-title">НОВОЕ ПИСЬМО</div>
           <div class="form-group"><label class="form-label">Отдел (или "всем")</label><select class="select w-full" id="mailDept"><option value="all">ВСЕМ</option></select></div>
           <div class="form-group"><label class="form-label">Кому</label><select class="select w-full" id="mailTo"></select></div>
@@ -1836,40 +1852,141 @@
                         toSel.appendChild(o); }); } }
             deptSel.addEventListener('change', updateToSel);
             updateToSel();
-            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
-            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            const closeFn = () => closeModalFast(modal);
+            modal.querySelector('.cancelModalBtn').addEventListener('click', closeFn);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeFn(); });
             modal.querySelector('#sendMailBtn').addEventListener('click', async () => { const mail = { from: state.currentUser
                         .name, fromId: state.currentUser.id, to: toSel.value || 'all', toDepartment: deptSel.value,
                     content: modal.querySelector('#mailContent').value, timestamp: Date.now() }; if (!mail
                     .content) { toast('ВВЕДИТЕ СООБЩЕНИЕ'); return; } try { await push(ref(db, 'mail'), mail);
                     toast('ОТПРАВЛЕНО');
                     sfxClick();
-                    modal.remove();
+                    closeFn();
                     renderMail(); } catch (e) { toast('ОШИБКА');
                     sfxError(); } }); }
 
-        // ============ ЧАТ ============
-        async function renderChat() { if (!state.currentUser) { contentArea.innerHTML = '<p>ТОЛЬКО ДЛЯ ПЕРСОНАЖЕЙ</p>'; return; }
+        // ============ ЧАТ С ЛИЧНЫМИ СООБЩЕНИЯМИ ============
+        async function renderChat() {
+            if (!state.currentUser) return;
+            await loadMembers();
             contentArea.innerHTML = `
         <h1 class="section-title">ЧАТ</h1>
-        <div class="chat-container"><div class="chat-messages" id="chatMessages"></div>
-          <div class="chat-input-row"><input class="chat-input" id="chatInput" placeholder="СООБЩЕНИЕ..."><button class="btn" id="chatSendBtn">▶</button></div>
+        <div class="chat-layout">
+          <div class="chat-user-list" id="chatUserList"></div>
+          <div class="chat-main">
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-row">
+              <input class="chat-input" id="chatInput" placeholder="СООБЩЕНИЕ...">
+              <button class="btn" id="chatSendBtn">▶</button>
+            </div>
+          </div>
         </div>`;
-            const msgDiv = $('#chatMessages'); if (state.chatListener) { off(state.chatListener);
-                state.chatListener = null; } const chatRef = ref(db, 'chat');
-            state.chatListener = onValue(chatRef, (snap) => { msgDiv.innerHTML = ''; if (snap.exists()) { const data = snap
-                        .val();
-                    Object.values(data).sort((a, b) => a.timestamp - b.timestamp).forEach(m => { msgDiv.innerHTML +=
-                            `<div class="chat-msg"><span class="sender">${m.sender}</span> <span class="time">${new Date(m.timestamp).toLocaleTimeString()}</span><br>${m.text}</div>`; }); }
-                msgDiv.scrollTop = msgDiv.scrollHeight; }, (e) => { msgDiv.innerHTML =
-                    '<p style="color:var(--danger);">ОШИБКА ПОДКЛЮЧЕНИЯ К ЧАТУ</p>'; });
-            $('#chatSendBtn').addEventListener('click', sendChat);
-            $('#chatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); }); }
-        async function sendChat() { const input = $('#chatInput'); const text = input.value.trim(); if (!text || !state
-                .currentUser) return; try { await push(ref(db, 'chat'), { sender: state.currentUser.name, senderId: state
-                    .currentUser.id, text, timestamp: Date.now() });
+            updateChatUserList();
+            if (!state.privateChatId) {
+                switchToGeneralChat();
+            } else {
+                switchToPrivateChat(state.privateChatUser?.id);
+            }
+        }
+
+        function updateChatUserList() {
+            const list = $('#chatUserList');
+            if (!list) return;
+            const active = state.members.filter(m => m.status === 'active' && m.id !== state.currentUser.id);
+            let html = `<div class="chat-user-item${!state.privateChatId?' active':''}" data-user-id="general">
+            <span class="online-dot" style="background:var(--accent-light);box-shadow:0 0 8px var(--accent-glow);"></span>
+            ОБЩИЙ ЧАТ
+          </div>`;
+            active.forEach(m => {
+                const online = state.onlineUsers[m.id];
+                const dotClass = online ? 'online' : '';
+                html += `<div class="chat-user-item${state.privateChatUser?.id===m.id?' active':''}" data-user-id="${m.id}">
+              <span class="online-dot ${dotClass}"></span>
+              ${m.name}
+            </div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function switchToGeneralChat() {
+            const msgDiv = $('#chatMessages');
+            if (!msgDiv) return;
+            if (state.privateChatListener) { off(state.privateChatListener);
+                state.privateChatListener = null; }
+            if (state.chatListener && state.activeChatRef !== 'chat') { off(state.chatListener);
+                state.chatListener = null; }
+            if (!state.chatListener) {
+                const chatRef = ref(db, 'chat');
+                state.chatListener = onValue(chatRef, (snap) => {
+                    if (!msgDiv) return;
+                    msgDiv.innerHTML = '';
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        Object.values(data).sort((a, b) => a.timestamp - b.timestamp).forEach(m => {
+                            msgDiv.innerHTML +=
+                                `<div class="chat-msg"><span class="sender">${m.sender||'???'}</span> <span class="time">${new Date(m.timestamp).toLocaleTimeString()}</span><br>${m.text||''}</div>`;
+                        });
+                    }
+                    msgDiv.scrollTop = msgDiv.scrollHeight;
+                }, (e) => { if (msgDiv) msgDiv.innerHTML =
+                        '<p style="color:var(--danger);">ОШИБКА ЧАТА</p>'; });
+                state.activeChatRef = 'chat';
+            }
+        }
+
+        function switchToPrivateChat(uid) {
+            const msgDiv = $('#chatMessages');
+            if (!msgDiv) return;
+            if (state.chatListener) { off(state.chatListener);
+                state.chatListener = null;
+                state.activeChatRef = null; }
+            if (state.privateChatListener) { off(state.privateChatListener);
+                state.privateChatListener = null; }
+            const chatId = [state.currentUser.id, uid].sort().join('-');
+            const privRef = ref(db, `privateChats/${chatId}/messages`);
+            state.privateChatListener = onValue(privRef, (snap) => {
+                if (!msgDiv) return;
+                msgDiv.innerHTML = '';
+                if (snap.exists()) {
+                    const data = snap.val();
+                    Object.values(data).sort((a, b) => a.timestamp - b.timestamp).forEach(m => {
+                        msgDiv.innerHTML +=
+                            `<div class="chat-msg private"><span class="sender">${m.sender||'???'}</span> <span class="time">${new Date(m.timestamp).toLocaleTimeString()}</span><br>${m.text||''}</div>`;
+                    });
+                } else {
+                    msgDiv.innerHTML =
+                        '<p style="color:var(--text-dim);text-align:center;padding:20px;">ЛИЧНЫЙ ЧАТ. СООБЩЕНИЙ ПОКА НЕТ.</p>';
+                }
+                msgDiv.scrollTop = msgDiv.scrollHeight;
+            }, (e) => { if (msgDiv) msgDiv.innerHTML =
+                    '<p style="color:var(--danger);">ОШИБКА ЛИЧНОГО ЧАТА</p>'; });
+        }
+
+        async function sendChatMessage() {
+            const input = $('#chatInput');
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text || !state.currentUser) return;
+            try {
+                if (state.privateChatId) {
+                    await push(ref(db, `privateChats/${state.privateChatId}/messages`), {
+                        sender: state.currentUser.name,
+                        senderId: state.currentUser.id,
+                        text,
+                        timestamp: Date.now(),
+                    });
+                } else {
+                    await push(ref(db, 'chat'), {
+                        sender: state.currentUser.name,
+                        senderId: state.currentUser.id,
+                        text,
+                        timestamp: Date.now(),
+                    });
+                }
                 input.value = '';
-                playBeep(800, 0.05, 'square', 0.05); } catch (e) { toast('ОШИБКА ОТПРАВКИ'); } }
+                playBeep(800, 0.05, 'square', 0.05);
+            } catch (e) { toast('ОШИБКА ОТПРАВКИ'); }
+        }
 
         // ============ АДМИН-ПАНЕЛЬ ============
         async function renderAdmin() { if (!state.isAdmin && !state.isDeveloper) { contentArea.innerHTML =
@@ -1898,196 +2015,162 @@
                 renderAdminTab(tab.dataset.atab); });
             renderAdminTab('members'); }
 
-        async function renderAdminTab(tab) {
-            const ac = $('#adminContent');
-            // Снимаем старый обработчик
-            ac.removeEventListener('click', adminClickHandler);
-            try {
-                switch (tab) {
-                    case 'members':
-                        await loadMembers(true);
-                        let html =
-                            '<h3>УПРАВЛЕНИЕ УЧАСТНИКАМИ</h3><button class="btn" id="addMemberManuallyBtn">+ ДОБАВИТЬ ВРУЧНУЮ</button><br><br>';
-                        state.members.forEach(m => {
-                            html +=
-                                `<div class="card"><div class="card-title">${m.name} (${m.status||'active'})</div><div>Роль: <select class="select roleSelect" data-id="${m.id}"><option ${m.role==='Обычный сотрудник'?'selected':''}>Обычный сотрудник</option><option ${m.role==='Заместитель'?'selected':''}>Заместитель</option><option ${m.role==='Глава'?'selected':''}>Глава</option><option ${m.role==='Смотритель'?'selected':''}>Смотритель</option></select></div><div>Профессия: <input class="input profInput" data-id="${m.id}" value="${m.profession||''}"></div><div>Отдел: <input class="input deptInput" data-id="${m.id}" value="${m.department||''}"></div><button class="btn small saveMemberBtn" data-id="${m.id}">СОХРАНИТЬ</button><button class="btn small danger resetPassBtn" data-id="${m.id}">СБРОС ПАРОЛЯ</button><button class="btn small danger deleteMemberBtn" data-id="${m.id}">УДАЛИТЬ</button></div>`;
-                        });
-                        ac.innerHTML = html || '<p>Нет участников.</p>';
-                        // Делегирование на adminContent
-                        ac.addEventListener('click', adminClickHandler);
-                        // Кнопка добавления
-                        const addBtn = $('#addMemberManuallyBtn');
-                        if (addBtn) addBtn.addEventListener('click', () => { const name = prompt('ИМЯ ПЕРСОНАЖА:'); if (
-                                name) { const id = 'manual_' + Date.now();
+        async function renderAdminTab(tab) { const ac = $('#adminContent');
+            ac.removeEventListener('click', adminClickHandler); try { switch (tab) { case 'members': await loadMembers(
+                        true); let html =
+                        '<h3>УПРАВЛЕНИЕ УЧАСТНИКАМИ</h3><button class="btn" id="addMemberManuallyBtn">+ ДОБАВИТЬ ВРУЧНУЮ</button><br><br>';
+                    state.members.forEach(m => { html +=
+                            `<div class="card"><div class="card-title">${m.name} (${m.status||'active'})</div><div>Роль: <select class="select roleSelect" data-id="${m.id}"><option ${m.role==='Обычный сотрудник'?'selected':''}>Обычный сотрудник</option><option ${m.role==='Заместитель'?'selected':''}>Заместитель</option><option ${m.role==='Глава'?'selected':''}>Глава</option><option ${m.role==='Смотритель'?'selected':''}>Смотритель</option></select></div><div>Профессия: <input class="input profInput" data-id="${m.id}" value="${m.profession||''}"></div><div>Отдел: <input class="input deptInput" data-id="${m.id}" value="${m.department||''}"></div><button class="btn small saveMemberBtn" data-id="${m.id}">СОХРАНИТЬ</button><button class="btn small danger resetPassBtn" data-id="${m.id}">СБРОС ПАРОЛЯ</button><button class="btn small danger deleteMemberBtn" data-id="${m.id}">УДАЛИТЬ</button></div>`; });
+                    ac.innerHTML = html || '<p>Нет участников.</p>';
+                    ac.addEventListener('click', adminClickHandler); const addBtn = $('#addMemberManuallyBtn'); if (addBtn)
+                        addBtn.addEventListener('click', () => { const name = prompt('ИМЯ ПЕРСОНАЖА:'); if (name) { const
+                                id = 'manual_' + Date.now();
                                 set(ref(db, `members/${id}`), { name, role: 'Обычный сотрудник', profession: 'Н/Д',
                                     department: 'Н/Д', status: 'active', password: '', createdAt: Date.now() });
                                 toast('ДОБАВЛЕН');
                                 logAction(`Добавлен участник ${name}`);
-                                renderAdminTab('members'); } });
-                        break;
-                    case 'applications':
-                        const asnap = await get(ref(db, 'applications'));
-                        ac.innerHTML = '<h3>МОДЕРАЦИЯ АНКЕТ</h3>';
-                        if (asnap.exists()) {
-                            const data = asnap.val();
-                            Object.keys(data).forEach(k => { const a = data[k]; if (a.status === 'pending') { const card =
-                                        document.createElement('div');
-                                    card.className = 'card';
-                                    card.innerHTML =
-                                        `<div class="card-title">${a.name||'БЕЗ ИМЕНИ'} [${a.status}]</div><div class="card-text">Должность: ${a.position||'Н/Д'} | Отдел: ${a.department||'Н/Д'}<br>Раса: ${a.race||'Н/Д'} | Пол: ${a.gender||'Н/Д'}<br>Биография: ${a.bio||'Нет'}</div><button class="btn small success approveAppBtn" data-id="${k}">✓ ОДОБРИТЬ</button> <button class="btn small danger rejectAppBtn" data-id="${k}">✗ ОТКЛОНИТЬ</button>`;
-                                    ac.appendChild(card); } }); } else { ac.innerHTML += '<p>Нет анкет.</p>'; }
-                        ac.addEventListener('click', adminClickHandler);
-                        break;
-                    case 'dossiers':
-                        const dsnap = await get(ref(db, 'dossiers'));
-                        ac.innerHTML = '<h3>РЕДАКТИРОВАНИЕ ДОСЬЕ</h3>';
-                        if (dsnap.exists()) { const data = dsnap.val();
-                            Object.keys(data).forEach(k => { const d = data[k];
-                                ac.innerHTML +=
-                                    `<div class="card"><div class="card-title">${d.name||'БЕЗ ИМЕНИ'}</div><button class="btn small editDossierAdminBtn" data-id="${k}">✎ РЕДАКТИРОВАТЬ</button></div>`; }); } else { ac.innerHTML +=
-                                '<p>Досье нет.</p>'; }
-                        ac.addEventListener('click', adminClickHandler);
-                        break;
-                    case 'pages':
-                        ac.innerHTML = `
+                                renderAdminTab('members'); } }); break; case 'applications': const asnap = await get(ref(
+                            db, 'applications'));
+                    ac.innerHTML = '<h3>МОДЕРАЦИЯ АНКЕТ</h3>'; if (asnap.exists()) { const data = asnap.val();
+                        Object.keys(data).forEach(k => { const a = data[k]; if (a.status === 'pending') { const card =
+                                    document.createElement('div');
+                                card.className = 'card';
+                                card.innerHTML =
+                                    `<div class="card-title">${a.name||'БЕЗ ИМЕНИ'} [${a.status}]</div><div class="card-text">Должность: ${a.position||'Н/Д'} | Отдел: ${a.department||'Н/Д'}<br>Раса: ${a.race||'Н/Д'} | Пол: ${a.gender||'Н/Д'}<br>Биография: ${a.bio||'Нет'}</div><button class="btn small success approveAppBtn" data-id="${k}">✓ ОДОБРИТЬ</button> <button class="btn small danger rejectAppBtn" data-id="${k}">✗ ОТКЛОНИТЬ</button>`;
+                                ac.appendChild(card); } }); } else { ac.innerHTML += '<p>Нет анкет.</p>'; }
+                    ac.addEventListener('click', adminClickHandler); break; case 'dossiers': const dsnap = await get(ref(
+                            db, 'dossiers'));
+                    ac.innerHTML = '<h3>РЕДАКТИРОВАНИЕ ДОСЬЕ</h3>'; if (dsnap.exists()) { const data = dsnap.val();
+                        Object.keys(data).forEach(k => { const d = data[k];
+                            ac.innerHTML +=
+                                `<div class="card"><div class="card-title">${d.name||'БЕЗ ИМЕНИ'}</div><button class="btn small editDossierAdminBtn" data-id="${k}">✎ РЕДАКТИРОВАТЬ</button></div>`; }); } else { ac.innerHTML +=
+                            '<p>Досье нет.</p>'; }
+                    ac.addEventListener('click', adminClickHandler); break; case 'pages':
+                    ac.innerHTML = `
             <h3>РЕДАКТОР СТРАНИЦ</h3>
             <button class="btn" id="editStatusPageBtn">СТАТУС</button>
             <button class="btn" id="editDataPageBtn">ДАННЫЕ</button>
             <button class="btn" id="editProtocolPageBtn">ПРОТОКОЛ</button>
             <button class="btn" id="editContactsPageBtn">СВЯЗЬ</button>`;
-                        $('#editStatusPageBtn').addEventListener('click', () => openEditor('status', 'СТАТУС'));
-                        $('#editDataPageBtn').addEventListener('click', () => openEditor('data', 'ДАННЫЕ'));
-                        $('#editProtocolPageBtn').addEventListener('click', () => openEditor('protocol', 'ПРОТОКОЛ'));
-                        $('#editContactsPageBtn').addEventListener('click', () => openEditor('contacts', 'СВЯЗЬ'));
-                        break;
-                    case 'gallery':
-                        const gsnap = await get(ref(db, 'archive'));
-                        ac.innerHTML = '<h3>УПРАВЛЕНИЕ ГАЛЕРЕЕЙ</h3>';
-                        if (gsnap.exists()) { const data = gsnap.val();
-                            Object.keys(data).forEach(k => { const f = data[k];
-                                ac.innerHTML +=
-                                    `<div class="card"><span>${f.name||'ФАЙЛ'}</span> <a href="${f.url}" target="_blank" rel="noopener" style="color:var(--accent);">ОТКРЫТЬ</a> <button class="btn small danger delArchiveBtn" data-id="${k}">✗</button></div>`; }); } else { ac.innerHTML +=
-                                '<p>Файлов нет.</p>'; }
-                        ac.addEventListener('click', adminClickHandler);
-                        break;
-                    case 'records':
-                        ac.innerHTML = `
+                    $('#editStatusPageBtn').addEventListener('click', () => openEditor('status', 'СТАТУС'));
+                    $('#editDataPageBtn').addEventListener('click', () => openEditor('data', 'ДАННЫЕ'));
+                    $('#editProtocolPageBtn').addEventListener('click', () => openEditor('protocol', 'ПРОТОКОЛ'));
+                    $('#editContactsPageBtn').addEventListener('click', () => openEditor('contacts', 'СВЯЗЬ')); break;
+                    case 'gallery': const gsnap = await get(ref(db, 'archive'));
+                    ac.innerHTML = '<h3>УПРАВЛЕНИЕ ГАЛЕРЕЕЙ</h3>'; if (gsnap.exists()) { const data = gsnap.val();
+                        Object.keys(data).forEach(k => { const f = data[k];
+                            ac.innerHTML +=
+                                `<div class="card"><span>${f.name||'ФАЙЛ'}</span> <a href="${f.url}" target="_blank" rel="noopener" style="color:var(--accent);">ОТКРЫТЬ</a> <button class="btn small danger delArchiveBtn" data-id="${k}">✗</button></div>`; }); } else { ac.innerHTML +=
+                            '<p>Файлов нет.</p>'; }
+                    ac.addEventListener('click', adminClickHandler); break; case 'records':
+                    ac.innerHTML = `
             <h3>УПРАВЛЕНИЕ ЗАПИСЯМИ</h3>
             <button class="btn viewRecBtn" data-section="laboratory">ЛАБОРАТОРИЯ</button>
             <button class="btn viewRecBtn" data-section="medbay">МЕДОТСЕК</button>
             <button class="btn viewRecBtn" data-section="armory">КХО</button>
             <div id="recordsView"></div>`;
-                        ac.addEventListener('click', async (e) => { const btn = e.target.closest('.viewRecBtn'); if (!btn)
-                                return; const section = btn.dataset.section; const snap = await get(ref(db, section)); let
-                                h = `<h4>${section.toUpperCase()}</h4>`; if (snap.exists()) { const data = snap.val();
-                                    Object.keys(data).forEach(k => { const r = data[k];
-                                        h +=
-                                            `<div class="card"><div class="card-title">${r.title}</div><button class="btn small danger delRecBtn" data-section="${section}" data-id="${k}">✗</button></div>`; }); } else { h +=
-                                        '<p>Нет записей.</p>'; }
-                                $('#recordsView').innerHTML = h;
-                                $('#recordsView').addEventListener('click', async (ev) => { const dbtn = ev.target
-                                        .closest('.delRecBtn'); if (!dbtn) return; await remove(ref(db,
-                                            `${dbtn.dataset.section}/${dbtn.dataset.id}`));
-                                        toast('УДАЛЕНО');
-                                        logAction(`Удалена запись из ${dbtn.dataset.section}`);
-                                        btn.click(); }); });
-                        break;
-                    case 'mailchat':
-                        const msnap = await get(ref(db, 'mail'));
-                        const csnap = await get(ref(db, 'chat'));
-                        ac.innerHTML = '<h3>ПОЧТА</h3>';
-                        if (msnap.exists()) { const data = msnap.val();
-                            Object.keys(data).forEach(k => { const m = data[k];
-                                ac.innerHTML +=
-                                    `<div class="card"><div class="card-title">ОТ: ${m.from} → ${m.to||'ВСЕМ'}</div><div class="card-text">${m.content||''}</div><button class="btn small danger delMailBtn" data-id="${k}">✗</button></div>`; }); } else { ac.innerHTML +=
-                                '<p>Писем нет.</p>'; }
-                        ac.innerHTML += '<h3 style="margin-top:20px;">ЧАТ</h3>';
-                        if (csnap.exists()) { const data = csnap.val();
-                            Object.keys(data).forEach(k => { const m = data[k];
-                                ac.innerHTML +=
-                                    `<div class="card"><small>${m.sender}: ${m.text}</small> <button class="btn small danger delChatBtn" data-id="${k}">✗</button></div>`; }); } else { ac.innerHTML +=
-                                '<p>Сообщений нет.</p>'; }
-                        ac.addEventListener('click', adminClickHandler);
-                        break;
-                    case 'logs':
-                        const lsnap = await get(ref(db, 'logs'));
-                        ac.innerHTML =
-                            '<h3>ЛОГИ</h3><div class="filter-row"><input class="input" id="logFilter" placeholder="ФИЛЬТР ПО ТИПУ..."><button class="btn small" id="logFilterBtn">ПРИМЕНИТЬ</button><button class="btn small" id="logClearBtn">ОЧИСТИТЬ ВСЕ</button></div><div id="logList"></div>';
-                        const renderLogs = (filter = '') => { const logList = $('#logList'); if (lsnap.exists()) { let
-                                logs = Object.values(lsnap.val()).sort((a, b) => b.timestamp - a.timestamp); if (
-                                    filter) { logs = logs.filter(l => l.action.toLowerCase().includes(filter
-                                    .toLowerCase())); }
-                                logList.innerHTML = logs.slice(0, 100).map(l =>
-                                    `<div class="card"><small>${new Date(l.timestamp).toLocaleString()}</small> — ${l.action} (${l.user||'—'})</div>`
-                                    ).join(''); } else { logList.innerHTML = '<p>Логов нет.</p>'; } };
-                        renderLogs();
-                        $('#logFilterBtn').addEventListener('click', () => renderLogs($('#logFilter').value));
-                        $('#logClearBtn').addEventListener('click', async () => { if (confirm('УДАЛИТЬ ВСЕ ЛОГИ?')) { await
-                                    set(ref(db, 'logs'), null);
-                                    toast('ЛОГИ ОЧИЩЕНЫ');
-                                    renderAdminTab('logs'); } });
-                        break;
-                    case 'warnings':
-                        const wsnap = await get(ref(db, 'warnings'));
-                        ac.innerHTML =
-                            '<h3>ПРЕДУПРЕЖДЕНИЯ</h3><button class="btn" id="addWarningBtn">+ ВЫНЕСТИ ПРЕДУПРЕЖДЕНИЕ</button><br><br><div id="warnList"></div>';
-                        const renderWarnings = () => { const wl = $('#warnList');
-                            wl.innerHTML = ''; if (wsnap.exists()) { const data = wsnap.val();
-                                Object.keys(data).forEach(k => { const w = data[k];
-                                    wl.innerHTML +=
-                                        `<div class="card"><div class="card-title">${w.memberName||'Н/Д'} — <span class="badge ${w.count>=3?'danger':'warn'}">${w.count||0}/3</span></div><div class="card-text">${w.reason||''}</div><button class="btn small danger removeWarnBtn" data-id="${k}">СНЯТЬ</button></div>`; }); } else { wl.innerHTML =
-                                        '<p>Предупреждений нет.</p>'; }
-                            wl.addEventListener('click', async (e) => { const btn = e.target.closest('.removeWarnBtn'); if (
-                                    !btn) return; await remove(ref(db, `warnings/${btn.dataset.id}`));
-                                    toast('СНЯТО');
-                                    renderWarnings(); }); };
-                        renderWarnings();
-                        $('#addWarningBtn').addEventListener('click', () => { const modal = document.createElement('div');
-                            modal.className = 'modal-overlay active';
-                            modal.innerHTML = `
-              <div class="panel modal"><div class="panel-inner">
+                    ac.addEventListener('click', async (e) => { const btn = e.target.closest('.viewRecBtn'); if (!btn)
+                            return; const section = btn.dataset.section; const snap = await get(ref(db, section)); let
+                            h = `<h4>${section.toUpperCase()}</h4>`; if (snap.exists()) { const data = snap.val();
+                                Object.keys(data).forEach(k => { const r = data[k];
+                                    h +=
+                                        `<div class="card"><div class="card-title">${r.title}</div><button class="btn small danger delRecBtn" data-section="${section}" data-id="${k}">✗</button></div>`; }); } else { h +=
+                                    '<p>Нет записей.</p>'; }
+                            $('#recordsView').innerHTML = h;
+                            $('#recordsView').addEventListener('click', async (ev) => { const dbtn = ev.target
+                                    .closest('.delRecBtn'); if (!dbtn) return; await remove(ref(db,
+                                        `${dbtn.dataset.section}/${dbtn.dataset.id}`));
+                                    toast('УДАЛЕНО');
+                                    logAction(`Удалена запись из ${dbtn.dataset.section}`);
+                                    btn.click(); }); }); break; case 'mailchat': const msnap = await get(ref(db, 'mail'));
+                    const csnap = await get(ref(db, 'chat'));
+                    ac.innerHTML = '<h3>ПОЧТА</h3>'; if (msnap.exists()) { const data = msnap.val();
+                        Object.keys(data).forEach(k => { const m = data[k];
+                            ac.innerHTML +=
+                                `<div class="card"><div class="card-title">ОТ: ${m.from} → ${m.to||'ВСЕМ'}</div><div class="card-text">${m.content||''}</div><button class="btn small danger delMailBtn" data-id="${k}">✗</button></div>`; }); } else { ac.innerHTML +=
+                            '<p>Писем нет.</p>'; }
+                    ac.innerHTML += '<h3 style="margin-top:20px;">ЧАТ</h3>'; if (csnap.exists()) { const data = csnap.val();
+                        Object.keys(data).forEach(k => { const m = data[k];
+                            ac.innerHTML +=
+                                `<div class="card"><small>${m.sender}: ${m.text}</small> <button class="btn small danger delChatBtn" data-id="${k}">✗</button></div>`; }); } else { ac.innerHTML +=
+                            '<p>Сообщений нет.</p>'; }
+                    ac.addEventListener('click', adminClickHandler); break; case 'logs': const lsnap = await get(ref(db,
+                            'logs'));
+                    ac.innerHTML =
+                        '<h3>ЛОГИ</h3><div class="filter-row"><input class="input" id="logFilter" placeholder="ФИЛЬТР ПО ТИПУ..."><button class="btn small" id="logFilterBtn">ПРИМЕНИТЬ</button><button class="btn small" id="logClearBtn">ОЧИСТИТЬ ВСЕ</button></div><div id="logList"></div>';
+                    const renderLogs = (filter = '') => { const logList = $('#logList'); if (lsnap.exists()) { let
+                            logs = Object.values(lsnap.val()).sort((a, b) => b.timestamp - a.timestamp); if (
+                                filter) { logs = logs.filter(l => l.action.toLowerCase().includes(filter
+                                .toLowerCase())); }
+                            logList.innerHTML = logs.slice(0, 100).map(l =>
+                                `<div class="card"><small>${new Date(l.timestamp).toLocaleString()}</small> — ${l.action} (${l.user||'—'})</div>`
+                                ).join(''); } else { logList.innerHTML = '<p>Логов нет.</p>'; } };
+                    renderLogs();
+                    $('#logFilterBtn').addEventListener('click', () => renderLogs($('#logFilter').value));
+                    $('#logClearBtn').addEventListener('click', async () => { if (confirm('УДАЛИТЬ ВСЕ ЛОГИ?')) { await
+                                set(ref(db, 'logs'), null);
+                                toast('ЛОГИ ОЧИЩЕНЫ');
+                                renderAdminTab('logs'); } }); break; case 'warnings': const wsnap = await get(ref(db,
+                            'warnings'));
+                    ac.innerHTML =
+                        '<h3>ПРЕДУПРЕЖДЕНИЯ</h3><button class="btn" id="addWarningBtn">+ ВЫНЕСТИ ПРЕДУПРЕЖДЕНИЕ</button><br><br><div id="warnList"></div>';
+                    const renderWarnings = () => { const wl = $('#warnList');
+                        wl.innerHTML = ''; if (wsnap.exists()) { const data = wsnap.val();
+                            Object.keys(data).forEach(k => { const w = data[k];
+                                wl.innerHTML +=
+                                    `<div class="card"><div class="card-title">${w.memberName||'Н/Д'} — <span class="badge ${w.count>=3?'danger':'warn'}">${w.count||0}/3</span></div><div class="card-text">${w.reason||''}</div><button class="btn small danger removeWarnBtn" data-id="${k}">СНЯТЬ</button></div>`; }); } else { wl.innerHTML =
+                                    '<p>Предупреждений нет.</p>'; }
+                        wl.addEventListener('click', async (e) => { const btn = e.target.closest('.removeWarnBtn'); if (
+                                !btn) return; await remove(ref(db, `warnings/${btn.dataset.id}`));
+                                toast('СНЯТО');
+                                renderWarnings(); }); };
+                    renderWarnings();
+                    $('#addWarningBtn').addEventListener('click', () => { const modal = document.createElement('div');
+                        modal.className = 'modal-overlay active';
+                        modal.style.display = 'flex';
+                        modal.innerHTML = `
+              <div class="panel modal anim-in"><div class="panel-inner">
                 <div class="modal-title">ВЫНЕСТИ ПРЕДУПРЕЖДЕНИЕ</div>
                 <div class="form-group"><label class="form-label">Персонаж</label><select class="select w-full" id="warnMember">${state.members.filter(m=>m.status==='active').map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select></div>
                 <div class="form-group"><label class="form-label">Причина</label><textarea class="textarea w-full" id="warnReason"></textarea></div>
                 <button class="btn full-width" id="submitWarnBtn">■ ВЫНЕСТИ</button>
                 <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
               </div></div>`;
-                            document.body.appendChild(modal);
-                            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
-                            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-                            modal.querySelector('#submitWarnBtn').addEventListener('click', async () => { const mid =
-                                    modal.querySelector('#warnMember').value; const reason = modal.querySelector(
-                                        '#warnReason').value; const member = state.members.find(m => m.id ===
-                                    mid); const existingSnap = await get(ref(db, `warnings/${mid}`)); let count =
-                                    1; if (existingSnap.exists()) { count = existingSnap.val().count + 1; }
-                                await set(ref(db, `warnings/${mid}`), { memberId: mid, memberName: member?.name ||
-                                        mid, reason, count, timestamp: Date.now() }); if (count >= 3) { await
-                                        update(ref(db, `members/${mid}`), { status: 'banned' });
-                                    toast('ПЕРСОНАЖ ЗАБАНЕН (3 ПРЕДУПРЕЖДЕНИЯ)'); } else { toast(
-                                        `ПРЕДУПРЕЖДЕНИЕ ВЫНЕСЕНО (${count}/3)`); }
-                                logAction(`Предупреждение ${member?.name}: ${reason}`);
-                                modal.remove();
-                                renderWarnings(); }); });
-                        break;
-                    case 'calendar':
-                        const esnap = await get(ref(db, 'events'));
-                        ac.innerHTML =
-                            '<h3>КАЛЕНДАРЬ СОБЫТИЙ</h3><button class="btn" id="addEventBtn">+ ДОБАВИТЬ СОБЫТИЕ</button><br><br><div id="eventList"></div>';
-                        const renderEvents = () => { const el = $('#eventList');
-                            el.innerHTML = ''; if (esnap.exists()) { const data = esnap.val();
-                                Object.keys(data).forEach(k => { const e = data[k];
-                                    el.innerHTML +=
-                                        `<div class="card"><div class="card-title">📅 ${e.title||'СОБЫТИЕ'}</div><div class="card-text">${new Date(e.date).toLocaleDateString()} — ${e.desc||''}</div><button class="btn small danger delEventBtn" data-id="${k}">✗</button></div>`; });
-                                el.addEventListener('click', async (ev) => { const btn = ev.target.closest(
-                                        '.delEventBtn'); if (!btn) return; await remove(ref(db,
-                                            `events/${btn.dataset.id}`));
-                                        toast('УДАЛЕНО');
-                                        renderEvents(); }); } else { el.innerHTML = '<p>Событий нет.</p>'; } };
-                        renderEvents();
-                        $('#addEventBtn').addEventListener('click', () => { const modal = document.createElement('div');
-                            modal.className = 'modal-overlay active';
-                            modal.innerHTML = `
-              <div class="panel modal"><div class="panel-inner">
+                        document.body.appendChild(modal);
+                        const closeFn = () => closeModalFast(modal);
+                        modal.querySelector('.cancelModalBtn').addEventListener('click', closeFn);
+                        modal.addEventListener('click', (e) => { if (e.target === modal) closeFn(); });
+                        modal.querySelector('#submitWarnBtn').addEventListener('click', async () => { const mid =
+                                modal.querySelector('#warnMember').value; const reason = modal.querySelector(
+                                    '#warnReason').value; const member = state.members.find(m => m.id === mid); const
+                                existingSnap = await get(ref(db, `warnings/${mid}`)); let count = 1; if (existingSnap
+                                    .exists()) { count = existingSnap.val().count + 1; }
+                            await set(ref(db, `warnings/${mid}`), { memberId: mid, memberName: member?.name || mid,
+                                reason, count, timestamp: Date.now() }); if (count >= 3) { await update(ref(db,
+                                    `members/${mid}`), { status: 'banned' });
+                                toast('ПЕРСОНАЖ ЗАБАНЕН (3 ПРЕДУПРЕЖДЕНИЯ)'); } else { toast(
+                                    `ПРЕДУПРЕЖДЕНИЕ ВЫНЕСЕНО (${count}/3)`); }
+                            logAction(`Предупреждение ${member?.name}: ${reason}`);
+                            closeFn();
+                            renderWarnings(); }); }); break; case 'calendar': const esnap = await get(ref(db,
+                            'events'));
+                    ac.innerHTML =
+                        '<h3>КАЛЕНДАРЬ СОБЫТИЙ</h3><button class="btn" id="addEventBtn">+ ДОБАВИТЬ СОБЫТИЕ</button><br><br><div id="eventList"></div>';
+                    const renderEvents = () => { const el = $('#eventList');
+                        el.innerHTML = ''; if (esnap.exists()) { const data = esnap.val();
+                            Object.keys(data).forEach(k => { const e = data[k];
+                                el.innerHTML +=
+                                    `<div class="card"><div class="card-title">📅 ${e.title||'СОБЫТИЕ'}</div><div class="card-text">${new Date(e.date).toLocaleDateString()} — ${e.desc||''}</div><button class="btn small danger delEventBtn" data-id="${k}">✗</button></div>`; });
+                            el.addEventListener('click', async (ev) => { const btn = ev.target.closest('.delEventBtn'); if (
+                                    !btn) return; await remove(ref(db, `events/${btn.dataset.id}`));
+                                    toast('УДАЛЕНО');
+                                    renderEvents(); }); } else { el.innerHTML = '<p>Событий нет.</p>'; } };
+                    renderEvents();
+                    $('#addEventBtn').addEventListener('click', () => { const modal = document.createElement('div');
+                        modal.className = 'modal-overlay active';
+                        modal.style.display = 'flex';
+                        modal.innerHTML = `
+              <div class="panel modal anim-in"><div class="panel-inner">
                 <div class="modal-title">НОВОЕ СОБЫТИЕ</div>
                 <div class="form-group"><label class="form-label">Название</label><input class="input w-full" id="eventTitle"></div>
                 <div class="form-group"><label class="form-label">Дата</label><input type="date" class="input w-full" id="eventDate"></div>
@@ -2095,172 +2178,123 @@
                 <button class="btn full-width" id="submitEventBtn">■ СОХРАНИТЬ</button>
                 <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
               </div></div>`;
-                            document.body.appendChild(modal);
-                            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
-                            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-                            modal.querySelector('#submitEventBtn').addEventListener('click', async () => { const evt = {
-                                    title: modal.querySelector('#eventTitle').value, date: new Date(modal
-                                        .querySelector('#eventDate').value).getTime(), desc: modal.querySelector(
-                                        '#eventDesc').value, createdAt: Date.now() }; if (!evt.title) { toast(
-                                        'ВВЕДИТЕ НАЗВАНИЕ'); return; }
-                                await push(ref(db, 'events'), evt);
-                                toast('СОБЫТИЕ ДОБАВЛЕНО');
-                                logAction(`Добавлено событие: ${evt.title}`);
-                                modal.remove();
-                                renderEvents(); }); });
-                        break;
-                    case 'backup':
-                        ac.innerHTML =
-                            '<h3>БЭКАП БАЗЫ ДАННЫХ</h3><button class="btn" id="exportDbBtn">📥 ЭКСПОРТ JSON</button> <button class="btn" id="importDbBtn">📤 ИМПОРТ JSON</button><input type="file" id="importFileInput" accept=".json" style="display:none;">';
-                        $('#exportDbBtn').addEventListener('click', async () => { const rootSnap = await get(ref(db,
-                                    '/')); const data = rootSnap.exists() ? rootSnap.val() : {}; const blob = new Blob([
-                                    JSON.stringify(data, null, 2)
-                                ], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a =
-                                document.createElement('a');
-                            a.href = url;
-                            a.download = 'srvl-backup-' + new Date().toISOString().slice(0, 10) + '.json';
-                            a.click();
-                            URL.revokeObjectURL(url);
-                            toast('БЭКАП СКАЧАН');
-                            logAction('Экспорт базы данных'); });
-                        $('#importDbBtn').addEventListener('click', () => $('#importFileInput').click());
-                        $('#importFileInput').addEventListener('change', async (e) => { const file = e.target.files[0]; if (
-                                !file) return; if (!confirm('ИМПОРТ ЗАМЕНИТ ВСЕ ДАННЫЕ. ПРОДОЛЖИТЬ?')) return; const
-                                reader = new FileReader();
-                            reader.onload = async (ev) => { try { const data = JSON.parse(ev.target.result); await set(
-                                        ref(db, '/'), data);
-                                    toast('БАЗА ИМПОРТИРОВАНА');
-                                    logAction('Импорт базы данных');
-                                    location.reload(); } catch (err) { toast('ОШИБКА ЧТЕНИЯ ФАЙЛА');
-                                    sfxError(); } };
-                            reader.readAsText(file); });
-                        break;
-                    case 'import':
-                        ac.innerHTML =
-                            '<h3>ИМПОРТ/ЭКСПОРТ УЧАСТНИКОВ</h3><button class="btn" id="exportMembersBtn">📥 ЭКСПОРТ CSV</button> <button class="btn" id="importMembersBtn">📤 ИМПОРТ CSV</button><input type="file" id="importMembersFile" accept=".csv" style="display:none;">';
-                        $('#exportMembersBtn').addEventListener('click', async () => { await loadMembers(true); if (state
-                                .members.length === 0) { toast('НЕТ УЧАСТНИКОВ'); return; } let csv =
-                                'Имя,Роль,Профессия,Отдел,Статус\n';
-                            state.members.forEach(m => { csv +=
-                                    `${m.name||''},${m.role||''},${m.profession||''},${m.department||''},${m.status||''}\n`; }); const
-                                blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const
-                                a = document.createElement('a');
-                            a.href = url;
-                            a.download = 'srvl-members-' + new Date().toISOString().slice(0, 10) + '.csv';
-                            a.click();
-                            URL.revokeObjectURL(url);
-                            toast('ЭКСПОРТ ГОТОВ'); });
-                        $('#importMembersBtn').addEventListener('click', () => $('#importMembersFile').click());
-                        $('#importMembersFile').addEventListener('change', async (e) => { const file = e.target.files[0]; if (
-                                !file) return; const reader = new FileReader();
-                            reader.onload = async (ev) => { const lines = ev.target.result.split('\n').filter(Boolean); if (
-                                    lines.length < 2) { toast('ПУСТОЙ ФАЙЛ'); return; } let count = 0; for (let i =
-                                    1; i < lines.length; i++) { const vals = lines[i].split(','); if (vals
-                                        .length < 5) continue; const id = 'import_' + Date.now() + '_' + i;
-                                    await set(ref(db, `members/${id}`), { name: vals[0], role: vals[1],
-                                        profession: vals[2], department: vals[3], status: vals[4], password: '',
-                                        createdAt: Date.now() });
-                                    count++; }
-                                toast(`ИМПОРТИРОВАНО: ${count} УЧАСТНИКОВ`);
-                                logAction(`Импорт ${count} участников`);
-                                renderAdminTab('members'); };
-                            reader.readAsText(file); });
-                        break;
-                    case 'dev':
-                        ac.innerHTML = `
+                        document.body.appendChild(modal);
+                        const closeFn = () => closeModalFast(modal);
+                        modal.querySelector('.cancelModalBtn').addEventListener('click', closeFn);
+                        modal.addEventListener('click', (e) => { if (e.target === modal) closeFn(); });
+                        modal.querySelector('#submitEventBtn').addEventListener('click', async () => { const evt = {
+                                title: modal.querySelector('#eventTitle').value, date: new Date(modal.querySelector(
+                                    '#eventDate').value).getTime(), desc: modal.querySelector('#eventDesc').value,
+                                createdAt: Date.now() }; if (!evt.title) { toast('ВВЕДИТЕ НАЗВАНИЕ'); return; }
+                            await push(ref(db, 'events'), evt);
+                            toast('СОБЫТИЕ ДОБАВЛЕНО');
+                            logAction(`Добавлено событие: ${evt.title}`);
+                            closeFn();
+                            renderEvents(); }); }); break; case 'backup':
+                    ac.innerHTML =
+                        '<h3>БЭКАП БАЗЫ ДАННЫХ</h3><button class="btn" id="exportDbBtn">📥 ЭКСПОРТ JSON</button> <button class="btn" id="importDbBtn">📤 ИМПОРТ JSON</button><input type="file" id="importFileInput" accept=".json" style="display:none;">';
+                    $('#exportDbBtn').addEventListener('click', async () => { const rootSnap = await get(ref(db, '/'));
+                        const data = rootSnap.exists() ? rootSnap.val() : {}; const blob = new Blob([JSON.stringify(
+                            data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const
+                            a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'srvl-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        toast('БЭКАП СКАЧАН');
+                        logAction('Экспорт базы данных'); });
+                    $('#importDbBtn').addEventListener('click', () => $('#importFileInput').click());
+                    $('#importFileInput').addEventListener('change', async (e) => { const file = e.target.files[0]; if (
+                            !file) return; if (!confirm('ИМПОРТ ЗАМЕНИТ ВСЕ ДАННЫЕ. ПРОДОЛЖИТЬ?')) return; const
+                            reader = new FileReader();
+                        reader.onload = async (ev) => { try { const data = JSON.parse(ev.target.result); await set(
+                                    ref(db, '/'), data);
+                                toast('БАЗА ИМПОРТИРОВАНА');
+                                logAction('Импорт базы данных');
+                                location.reload(); } catch (err) { toast('ОШИБКА ЧТЕНИЯ ФАЙЛА');
+                                sfxError(); } };
+                        reader.readAsText(file); }); break; case 'import':
+                    ac.innerHTML =
+                        '<h3>ИМПОРТ/ЭКСПОРТ УЧАСТНИКОВ</h3><button class="btn" id="exportMembersBtn">📥 ЭКСПОРТ CSV</button> <button class="btn" id="importMembersBtn">📤 ИМПОРТ CSV</button><input type="file" id="importMembersFile" accept=".csv" style="display:none;">';
+                    $('#exportMembersBtn').addEventListener('click', async () => { await loadMembers(true); if (state
+                            .members.length === 0) { toast('НЕТ УЧАСТНИКОВ'); return; } let csv =
+                            'Имя,Роль,Профессия,Отдел,Статус\n';
+                        state.members.forEach(m => { csv +=
+                                `${m.name||''},${m.role||''},${m.profession||''},${m.department||''},${m.status||''}\n`; }); const
+                            blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const
+                            a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'srvl-members-' + new Date().toISOString().slice(0, 10) + '.csv';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        toast('ЭКСПОРТ ГОТОВ'); });
+                    $('#importMembersBtn').addEventListener('click', () => $('#importMembersFile').click());
+                    $('#importMembersFile').addEventListener('change', async (e) => { const file = e.target.files[0]; if (
+                            !file) return; const reader = new FileReader();
+                        reader.onload = async (ev) => { const lines = ev.target.result.split('\n').filter(Boolean); if (
+                                lines.length < 2) { toast('ПУСТОЙ ФАЙЛ'); return; } let count = 0; for (let i =
+                                1; i < lines.length; i++) { const vals = lines[i].split(','); if (vals
+                                    .length < 5) continue; const id = 'import_' + Date.now() + '_' + i;
+                                await set(ref(db, `members/${id}`), { name: vals[0], role: vals[1],
+                                    profession: vals[2], department: vals[3], status: vals[4], password: '',
+                                    createdAt: Date.now() });
+                                count++; }
+                            toast(`ИМПОРТИРОВАНО: ${count} УЧАСТНИКОВ`);
+                            logAction(`Импорт ${count} участников`);
+                            renderAdminTab('members'); };
+                        reader.readAsText(file); }); break; case 'dev':
+                    ac.innerHTML = `
             <h3>DEV КОНСОЛЬ</h3>
             <button class="btn" id="changeAdminPasswordBtn">СМЕНИТЬ ПАРОЛЬ АДМИНКИ</button>
             <button class="btn danger" id="resetDbBtn" style="margin-top:10px;">СБРОС БАЗЫ (ОПАСНО)</button>
             <div style="margin-top:15px;"><label class="form-label">Прямой JSON-редактор</label><textarea class="textarea w-full" id="devJsonEditor" style="min-height:200px;"></textarea><button class="btn" id="devJsonLoadBtn">ЗАГРУЗИТЬ</button><button class="btn" id="devJsonSaveBtn">СОХРАНИТЬ</button></div>`;
-                        $('#changeAdminPasswordBtn').addEventListener('click', () => { const np = prompt(
-                                'НОВЫЙ ПАРОЛЬ АДМИНКИ:'); if (np) { state.adminPassword = np;
-                                toast('ПАРОЛЬ СМЕНЁН');
-                                logAction('Сменён пароль админки'); } });
-                        $('#resetDbBtn').addEventListener('click', () => { if (confirm(
-                                    'ВЫ УВЕРЕНЫ? ВСЕ ДАННЫЕ БУДУТ УДАЛЕНЫ!')) { set(ref(db), null);
-                                    toast('БАЗА СБРОШЕНА');
-                                    logAction('Сброс базы данных'); } });
-                        $('#devJsonLoadBtn').addEventListener('click', async () => { const snap = await get(ref(db, '/'));
-                            $('#devJsonEditor').value = JSON.stringify(snap.exists() ? snap.val() : {}, null, 2); });
-                        $('#devJsonSaveBtn').addEventListener('click', async () => { try { const data = JSON.parse($(
-                                    '#devJsonEditor').value); if (confirm('СОХРАНИТЬ ИЗМЕНЕНИЯ?')) { await set(ref(
-                                        db, '/'), data);
-                                    toast('СОХРАНЕНО');
-                                    logAction('Прямое редактирование БД'); } } catch (e) { toast('ОШИБКА JSON'); } });
-                        break;
-                }
-            } catch (e) { ac.innerHTML = '<p style="color:var(--danger);">ОШИБКА ЗАГРУЗКИ</p>'; }
-        }
+                    $('#changeAdminPasswordBtn').addEventListener('click', () => { const np = prompt(
+                            'НОВЫЙ ПАРОЛЬ АДМИНКИ:'); if (np) { state.adminPassword = np;
+                            toast('ПАРОЛЬ СМЕНЁН');
+                            logAction('Сменён пароль админки'); } });
+                    $('#resetDbBtn').addEventListener('click', () => { if (confirm(
+                                'ВЫ УВЕРЕНЫ? ВСЕ ДАННЫЕ БУДУТ УДАЛЕНЫ!')) { set(ref(db), null);
+                                toast('БАЗА СБРОШЕНА');
+                                logAction('Сброс базы данных'); } });
+                    $('#devJsonLoadBtn').addEventListener('click', async () => { const snap = await get(ref(db, '/'));
+                        $('#devJsonEditor').value = JSON.stringify(snap.exists() ? snap.val() : {}, null, 2); });
+                    $('#devJsonSaveBtn').addEventListener('click', async () => { try { const data = JSON.parse($(
+                                '#devJsonEditor').value); if (confirm('СОХРАНИТЬ ИЗМЕНЕНИЯ?')) { await set(ref(
+                                    db, '/'), data);
+                                toast('СОХРАНЕНО');
+                                logAction('Прямое редактирование БД'); } } catch (e) { toast('ОШИБКА JSON'); } });
+                    break; } } catch (e) { ac.innerHTML = '<p style="color:var(--danger);">ОШИБКА ЗАГРУЗКИ</p>'; } }
 
-        // ============ ОБРАБОТЧИК КЛИКОВ ДЛЯ АДМИН-ПАНЕЛИ (ДЕЛЕГИРОВАНИЕ) ============
-        function adminClickHandler(e) {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-
-            // Сохранить участника
-            if (btn.classList.contains('saveMemberBtn')) {
-                const id = btn.dataset.id;
-                const card = btn.closest('.card');
-                const role = card.querySelector('.roleSelect').value;
-                const prof = card.querySelector('.profInput').value;
-                const dept = card.querySelector('.deptInput').value;
+        function adminClickHandler(e) { const btn = e.target.closest('button'); if (!btn) return; if (btn.classList.contains(
+                'saveMemberBtn')) { const id = btn.dataset.id; const card = btn.closest('.card'); const role = card.querySelector(
+                    '.roleSelect').value; const prof = card.querySelector('.profInput').value; const dept = card.querySelector(
+                    '.deptInput').value;
                 update(ref(db, `members/${id}`), { role, profession: prof, department: dept });
                 toast('СОХРАНЕНО');
-                logAction(`Изменён участник ${id}`);
-            }
-            // Сброс пароля
-            if (btn.classList.contains('resetPassBtn')) {
-                if (confirm('СБРОСИТЬ ПАРОЛЬ?')) {
-                    update(ref(db, `members/${btn.dataset.id}`), { password: '' });
+                logAction(`Изменён участник ${id}`); } if (btn.classList.contains('resetPassBtn')) { if (confirm(
+                    'СБРОСИТЬ ПАРОЛЬ?')) { update(ref(db, `members/${btn.dataset.id}`), { password: '' });
                     toast('ПАРОЛЬ СБРОШЕН');
-                    logAction(`Сброшен пароль ${btn.dataset.id}`);
-                }
-            }
-            // Удалить участника
-            if (btn.classList.contains('deleteMemberBtn')) {
-                if (confirm('УДАЛИТЬ УЧАСТНИКА?')) {
-                    update(ref(db, `members/${btn.dataset.id}`), { status: 'deleted' });
+                    logAction(`Сброшен пароль ${btn.dataset.id}`); } } if (btn.classList.contains('deleteMemberBtn')) { if (
+                    confirm('УДАЛИТЬ УЧАСТНИКА?')) { update(ref(db, `members/${btn.dataset.id}`), { status: 'deleted' });
                     toast('УДАЛЁН');
                     logAction(`Удалён участник ${btn.dataset.id}`);
-                    renderAdminTab('members');
-                }
-            }
-            // Одобрить анкету
-            if (btn.classList.contains('approveAppBtn')) {
-                const id = btn.dataset.id;
-                get(ref(db, `applications/${id}`)).then(snap => { if (snap.exists()) approveApp(id, snap.val()); });
-            }
-            // Отклонить анкету
-            if (btn.classList.contains('rejectAppBtn')) {
-                rejectApp(btn.dataset.id);
-            }
-            // Редактировать досье из админки
-            if (btn.classList.contains('editDossierAdminBtn')) {
-                const id = btn.dataset.id;
-                get(ref(db, `dossiers/${id}`)).then(snap => { if (snap.exists()) openDossierEditor(id, snap.val()); });
-            }
-            // Удалить из галереи
-            if (btn.classList.contains('delArchiveBtn')) {
-                remove(ref(db, `archive/${btn.dataset.id}`));
+                    renderAdminTab('members'); } } if (btn.classList.contains('approveAppBtn')) { const id = btn.dataset.id;
+                get(ref(db, `applications/${id}`)).then(snap => { if (snap.exists()) approveApp(id, snap.val()); }); } if (btn
+                .classList.contains('rejectAppBtn')) { rejectApp(btn.dataset.id); } if (btn.classList.contains(
+                'editDossierAdminBtn')) { const id = btn.dataset.id;
+                get(ref(db, `dossiers/${id}`)).then(snap => { if (snap.exists()) openDossierEditor(id, snap.val()); }); } if (btn
+                .classList.contains('delArchiveBtn')) { remove(ref(db, `archive/${btn.dataset.id}`));
                 toast('УДАЛЕНО');
                 logAction('Удалён файл из галереи');
-                renderAdminTab('gallery');
-            }
-            // Удалить письмо
-            if (btn.classList.contains('delMailBtn')) {
-                remove(ref(db, `mail/${btn.dataset.id}`));
+                renderAdminTab('gallery'); } if (btn.classList.contains('delMailBtn')) { remove(ref(db,
+                    `mail/${btn.dataset.id}`));
                 toast('УДАЛЕНО');
                 logAction('Удалено письмо');
-                renderAdminTab('mailchat');
-            }
-            // Удалить сообщение чата
-            if (btn.classList.contains('delChatBtn')) {
-                remove(ref(db, `chat/${btn.dataset.id}`));
+                renderAdminTab('mailchat'); } if (btn.classList.contains('delChatBtn')) { remove(ref(db,
+                    `chat/${btn.dataset.id}`));
                 toast('УДАЛЕНО');
                 logAction('Удалено сообщение чата');
-                renderAdminTab('mailchat');
-            }
-        }
+                renderAdminTab('mailchat'); } }
 
         async function approveApp(id, data) { try { const memberRef = ref(db, `members/${id}`); await set(memberRef, { name: data
                     .name, role: 'Обычный сотрудник', profession: data.position || 'Н/Д', department: data.department ||
@@ -2282,16 +2316,14 @@
                     Object.keys(data).forEach(k => { if (data[k].timestamp < cutoff) remove(ref(db, `logs/${k}`)).catch(
                             () => {}); }); } } catch (e) {} }
 
-        // ============ ХОТКЕИ ============
-        window.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (document.activeElement === $('#chatInput'))
-                    return; if (loginModal.classList.contains('active')) $('#loginBtn').click(); else if ($('#accessBtn').style
-                    .display === 'block' && !mainInterface.classList.contains('active')) openLoginModal(); } if (e.key ===
-                'Escape') { if (loginModal.classList.contains('active')) closeLoginModal(); if (sidebar.classList.contains(
-                    'open')) sidebar.classList.remove('open'); } });
+        window.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (document.activeElement?.closest(
+                    '.chat-input')) return; if (loginModal.classList.contains('active')) $('#loginBtn').click(); else if ($(
+                    '#accessBtn').style.display === 'block' && !mainInterface.classList.contains('active'))
+                openLoginModal(); } if (e.key === 'Escape') { if (loginModal.classList.contains('active'))
+                closeLoginModal(); if (sidebar.classList.contains('open')) sidebar.classList.remove('open'); } });
         window.addEventListener('resize', () => { canvas.width = innerWidth;
             canvas.height = innerHeight; });
 
-        // ============ СТАРТ ============
         const visited = sessionStorage.getItem('srvl-visited'); if (visited) { $('#skipBtn').style.display = 'block';
             $('#skipBtn').textContent = '▶ ПРОПУСТИТЬ (ВХОД)'; }
         startAnimation();
