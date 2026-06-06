@@ -1,0 +1,2302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.R.V.L. // SECURE ACCESS TERMINAL</title>
+    <meta name="description" content="S.R.V.L. Secure Access Terminal">
+    <meta name="theme-color" content="#020503">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>◈</text></svg>">
+    <style>
+        :root {
+            --bg: #020503;
+            --accent: #11dd33;
+            --accent-light: #33ff33;
+            --accent-dark: #0a2a0a;
+            --accent-glow: #00ff41;
+            --text: #11dd33;
+            --text-dim: #0a5a0a;
+            --border: rgba(0, 255, 0, 0.3);
+            --panel-bg: rgba(0, 20, 0, 0.3);
+            --danger: #ff4444;
+            --warning: #ffaa00;
+            --info: #66ccff;
+            --scanline: rgba(0, 0, 0, 0.08);
+            --font-mono: 'Courier New', monospace;
+        }
+        [data-theme="amber"] {
+            --accent: #ffb020;
+            --accent-light: #ffcc44;
+            --accent-dark: #2a1a00;
+            --accent-glow: #ffaa00;
+            --text: #ffb020;
+            --text-dim: #5a4a00;
+            --border: rgba(255, 170, 0, 0.3);
+            --panel-bg: rgba(30, 15, 0, 0.3);
+        }
+        [data-theme="green"] {
+            --accent: #11dd33;
+            --accent-light: #33ff33;
+            --accent-dark: #0a2a0a;
+            --accent-glow: #00ff41;
+            --text: #11dd33;
+            --text-dim: #0a5a0a;
+            --border: rgba(0, 255, 0, 0.3);
+            --panel-bg: rgba(0, 20, 0, 0.3);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: var(--bg);
+            font-family: var(--font-mono);
+            color: var(--text);
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            min-height: 100vh;
+        }
+        body.animating {
+            animation: crtFlicker 4s infinite;
+        }
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scanline) 2px, var(--scanline) 4px);
+        }
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+            background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.6) 100%);
+        }
+        .damaged-corners {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 101;
+        }
+        .damaged-corner {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+        }
+        .corner-tl {
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 60px;
+            clip-path: polygon(0 0, 100% 0, 60% 40%, 0 100%);
+            border-right: 1px solid var(--accent);
+            border-bottom: 1px solid var(--accent);
+            opacity: 0.4;
+        }
+        .corner-tr {
+            top: 0;
+            right: 0;
+            width: 90px;
+            height: 55px;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 40% 35%);
+            border-left: 1px solid var(--accent);
+            border-bottom: 1px solid var(--accent);
+            opacity: 0.35;
+        }
+        .corner-bl {
+            bottom: 0;
+            left: 0;
+            width: 70px;
+            height: 65px;
+            clip-path: polygon(0 0, 55% 60%, 0 100%, 100% 100%);
+            border-right: 1px solid var(--accent);
+            border-top: 1px solid var(--accent);
+            opacity: 0.3;
+        }
+        .corner-br {
+            bottom: 0;
+            right: 0;
+            width: 100px;
+            height: 50px;
+            clip-path: polygon(50% 70%, 100% 0, 100% 100%, 0 100%);
+            border-left: 1px solid var(--accent);
+            border-top: 1px solid var(--accent);
+            opacity: 0.35;
+        }
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 98;
+        }
+        .glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 200;
+            opacity: 0;
+            background: var(--accent);
+            transition: opacity 0.1s ease;
+        }
+        .glitch-overlay.active {
+            opacity: 0.05;
+        }
+        .glitch-overlay.crash {
+            opacity: 0.9;
+            transition: opacity 0.5s ease;
+        }
+        @keyframes crtFlicker {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            98% {
+                opacity: 1;
+            }
+            98.5% {
+                opacity: 0.8;
+            }
+            99% {
+                opacity: 1;
+            }
+        }
+        .hidden {
+            display: none !important;
+        }
+        .btn {
+            padding: 10px 18px;
+            background: rgba(0, 40, 0, 0.4);
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.1s ease;
+            text-shadow: 0 0 10px var(--accent-glow);
+            clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+            transform: translateY(0);
+            box-shadow: 0 4px 0 var(--accent-dark), 0 0 15px rgba(0, 0, 0, 0.5);
+            min-height: 44px;
+            min-width: 44px;
+        }
+        .btn:hover {
+            background: rgba(0, 60, 0, 0.6);
+            box-shadow: 0 2px 0 var(--accent-dark), 0 0 25px var(--accent-glow);
+            transform: translateY(2px);
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 var(--accent-dark), 0 0 30px var(--accent-glow);
+            transition: all 0.05s ease;
+        }
+        .btn.full-width {
+            width: 100%;
+            text-align: center;
+        }
+        .btn.small {
+            padding: 8px 14px;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            min-height: 44px;
+        }
+        .btn.danger {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: rgba(40, 0, 0, 0.4);
+        }
+        .btn.success {
+            border-color: var(--accent-light);
+            color: var(--accent-light);
+        }
+        .input,
+        .textarea,
+        .select {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+        }
+        .input:focus,
+        .textarea:focus,
+        .select:focus {
+            outline: none;
+            border-color: var(--accent-light);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        .textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .select option {
+            background: #000;
+            color: var(--accent);
+        }
+        .panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--border);
+            position: relative;
+            clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+        }
+        .panel::before {
+            content: "";
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(100% - 8px);
+            height: calc(100% - 8px);
+            border: 1px solid var(--border);
+            pointer-events: none;
+            z-index: 0;
+            clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+        }
+        .panel::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background: radial-gradient(circle at 16px 16px, var(--accent) 3px, transparent 4px), radial-gradient(circle at calc(100% - 16px) 16px, var(--accent) 3px, transparent 4px), radial-gradient(circle at 16px calc(100% - 16px), var(--accent) 3px, transparent 4px), radial-gradient(circle at calc(100% - 16px) calc(100% - 16px), var(--accent) 3px, transparent 4px);
+            opacity: 0.6;
+        }
+        .panel-inner {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+        }
+        #loginScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 30px;
+            position: relative;
+            z-index: 50;
+        }
+        .logo-icon {
+            font-size: 5rem;
+            color: var(--accent);
+            text-shadow: 0 0 40px var(--accent-glow), 0 0 80px var(--accent-glow);
+            animation: logoGlow 2s ease-in-out infinite, logoFloat 3s ease-in-out infinite;
+        }
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: 15px;
+            color: var(--accent);
+            text-shadow: 0 0 20px var(--accent-glow);
+            animation: textFlicker 3s infinite;
+        }
+        .logo-subtitle {
+            font-size: 0.8rem;
+            letter-spacing: 8px;
+            color: var(--text-dim);
+        }
+        @keyframes logoGlow {
+            0%,
+            100% {
+                text-shadow: 0 0 40px var(--accent-glow), 0 0 80px var(--accent-glow);
+            }
+            50% {
+                text-shadow: 0 0 80px var(--accent-glow), 0 0 150px var(--accent-glow), 0 0 200px var(--accent-glow);
+            }
+        }
+        @keyframes logoFloat {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        @keyframes textFlicker {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            92% {
+                opacity: 1;
+            }
+            93% {
+                opacity: 0.3;
+            }
+            94% {
+                opacity: 1;
+            }
+            96% {
+                opacity: 0.4;
+            }
+            97% {
+                opacity: 1;
+            }
+        }
+        .login-window {
+            width: 650px;
+            max-width: 95vw;
+        }
+        .code-lines {
+            min-height: 120px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        .code-lines::-webkit-scrollbar {
+            width: 4px;
+        }
+        .code-lines::-webkit-scrollbar-thumb {
+            background: var(--accent);
+        }
+        .code-line {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        .code-line.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .code-line .bracket {
+            color: var(--warning);
+        }
+        .code-line .string {
+            color: var(--info);
+        }
+        .code-line .number {
+            color: var(--danger);
+        }
+        .code-line .keyword {
+            color: #ff44ff;
+        }
+        .code-line .comment {
+            color: var(--text-dim);
+        }
+        .code-line .success {
+            color: var(--accent-light);
+        }
+        .progress-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+        .progress-bar {
+            height: 3px;
+            background: var(--accent-dark);
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+            width: 0%;
+            transition: width 0.3s linear;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                box-shadow: 0 0 5px var(--accent-glow);
+            }
+            50% {
+                box-shadow: 0 0 15px var(--accent-glow);
+            }
+        }
+        #mainInterface {
+            display: none;
+            height: 100vh;
+            position: relative;
+            z-index: 50;
+        }
+        #mainInterface.active {
+            display: flex;
+        }
+        .sidebar {
+            width: 220px;
+            min-width: 220px;
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+        .sidebar-logo {
+            text-align: center;
+            padding: 20px 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            color: var(--accent);
+            text-shadow: 0 0 15px var(--accent-glow);
+        }
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 10px 0;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            cursor: pointer;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            text-transform: uppercase;
+            min-height: 44px;
+        }
+        .nav-item:hover {
+            color: var(--accent);
+            background: rgba(0, 40, 0, 0.2);
+            border-left-color: var(--accent-dark);
+        }
+        .nav-item.active {
+            color: var(--accent);
+            background: rgba(0, 40, 0, 0.4);
+            border-left-color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+            width: 25px;
+            text-align: center;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.2);
+            min-height: 50px;
+        }
+        .top-bar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .content-area::-webkit-scrollbar {
+            width: 4px;
+        }
+        .content-area::-webkit-scrollbar-thumb {
+            background: var(--accent);
+        }
+        .section-title {
+            font-size: 1.4rem;
+            letter-spacing: 8px;
+            color: var(--accent);
+            text-shadow: 0 0 15px var(--accent-glow);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            padding: 15px;
+            clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 1rem;
+            letter-spacing: 3px;
+            color: var(--accent-light);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .card-text {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .a4-sheet {
+            background: #0a0a0a;
+            border: 2px solid var(--accent);
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7), 0 0 10px var(--accent-glow);
+            position: relative;
+            word-break: break-word;
+        }
+        .a4-sheet::before {
+            content: "S.R.V.L. DOSSIER";
+            position: absolute;
+            top: -12px;
+            left: 30px;
+            background: #0a0a0a;
+            padding: 0 10px;
+            color: var(--accent);
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+        }
+        .a4-field {
+            display: flex;
+            border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
+            padding: 6px 0;
+            font-size: 0.8rem;
+        }
+        .a4-label {
+            width: 200px;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+        }
+        .a4-value {
+            flex: 1;
+            color: var(--text-dim);
+            word-break: break-word;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        .table th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid var(--accent);
+            color: var(--accent-light);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+        .table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        .table tr:hover td {
+            background: rgba(0, 40, 0, 0.1);
+            color: var(--accent);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            width: 650px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: drawWindow 0.4s ease-out;
+        }
+        @keyframes drawWindow {
+            0% {
+                clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%, 50% 50%, 50% 50%, 50% 50%, 50% 50%);
+                opacity: 0;
+            }
+            100% {
+                clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+                opacity: 1;
+            }
+        }
+        .modal-title {
+            font-size: 1.1rem;
+            letter-spacing: 6px;
+            color: var(--accent-light);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .sound-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 400;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            padding: 8px 15px;
+            clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+        }
+        .sound-icon {
+            cursor: pointer;
+            font-size: 1.2rem;
+            min-width: 44px;
+            text-align: center;
+        }
+        .sound-slider {
+            -webkit-appearance: none;
+            width: 80px;
+            height: 4px;
+            background: var(--accent-dark);
+            outline: none;
+            cursor: pointer;
+        }
+        .sound-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border: 2px solid var(--accent-light);
+            clip-path: polygon(20% 0, 80% 0, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 0 20%);
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.4);
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--accent);
+        }
+        .chat-msg {
+            font-size: 0.8rem;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .chat-msg .sender {
+            color: var(--accent-light);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .chat-msg .time {
+            color: var(--text-dim);
+            font-size: 0.6rem;
+        }
+        .chat-input-row {
+            display: flex;
+            border-top: 1px solid var(--border);
+            padding: 10px;
+            gap: 10px;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            min-height: 44px;
+        }
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent-light);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 500;
+            background: var(--panel-bg);
+            border: 2px solid var(--accent);
+            padding: 12px 20px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            color: var(--accent);
+            clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+            animation: slideIn 0.3s ease-out;
+            max-width: 90vw;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .admin-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .admin-tab {
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+        .admin-tab.active {
+            background: rgba(0, 40, 0, 0.5);
+            border-color: var(--accent);
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+        .admin-tab:hover {
+            color: var(--accent);
+        }
+        .w-full {
+            width: 100%;
+        }
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+        .badge.warn {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+        .badge.danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .hamburger {
+            display: none;
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px 12px;
+            min-width: 44px;
+            min-height: 44px;
+            z-index: 60;
+        }
+        @media (max-width: 700px) {
+            .hamburger {
+                display: block;
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                z-index: 60;
+            }
+            #mainInterface {
+                flex-direction: column;
+            }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 55;
+                transform: translateX(-100%);
+                width: 260px;
+                min-width: 260px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-nav {
+                padding-top: 60px;
+            }
+            .nav-item {
+                padding: 14px 15px;
+                font-size: 0.75rem;
+                letter-spacing: 1px;
+                border-left: none;
+                border-bottom: 2px solid transparent;
+            }
+            .nav-item.active {
+                border-left-color: transparent;
+                border-bottom-color: var(--accent);
+            }
+            .login-window {
+                width: 95vw;
+            }
+            .progress-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                flex-direction: column;
+            }
+            .sound-panel {
+                bottom: 10px;
+                right: 10px;
+                padding: 6px 10px;
+            }
+            .sound-slider {
+                width: 50px;
+            }
+            .a4-sheet {
+                padding: 15px;
+            }
+            .a4-field {
+                flex-direction: column;
+            }
+            .a4-label {
+                width: 100%;
+                margin-bottom: 2px;
+            }
+            .chat-container {
+                height: 300px;
+            }
+            .top-bar {
+                padding-left: 55px;
+            }
+            .top-bar .user-info {
+                gap: 8px;
+                font-size: 0.6rem;
+            }
+            .btn.small {
+                padding: 8px 10px;
+                font-size: 0.6rem;
+            }
+            .modal {
+                width: 98vw;
+                max-height: 95vh;
+            }
+            .panel-inner {
+                padding: 12px;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .logo-icon {
+                animation: none;
+            }
+            .logo-text {
+                animation: none;
+            }
+            body.animating {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="damaged-corners">
+        <div class="damaged-corner corner-tl"></div>
+        <div class="damaged-corner corner-tr"></div>
+        <div class="damaged-corner corner-bl"></div>
+        <div class="damaged-corner corner-br"></div>
+    </div>
+    <canvas class="particles" id="particlesCanvas"></canvas>
+    <div class="glitch-overlay" id="glitchOverlay"></div>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Меню">☰</button>
+
+    <div id="loginScreen">
+        <div style="text-align:center;">
+            <div class="logo-icon">◈</div>
+            <div class="logo-text">S.R.V.L.</div>
+            <div class="logo-subtitle">••• SECURE ACCESS TERMINAL •••</div>
+        </div>
+        <div class="panel login-window">
+            <div class="panel-inner">
+                <div class="code-lines" id="codeLines"></div>
+                <div class="progress-grid">
+                    <div class="progress-item"><div class="progress-label"><span>ЯДРО</span><span id="corePct">0%</span></div><div class="progress-bar"><div class="progress-fill" id="coreFill"></div></div></div>
+                    <div class="progress-item"><div class="progress-label"><span>ПАМЯТЬ</span><span id="memPct">0%</span></div><div class="progress-bar"><div class="progress-fill" id="memFill"></div></div></div>
+                    <div class="progress-item"><div class="progress-label"><span>СЕТЬ</span><span id="netPct">0%</span></div><div class="progress-bar"><div class="progress-fill" id="netFill"></div></div></div>
+                    <div class="progress-item"><div class="progress-label"><span>ЗАЩИТА</span><span id="secPct">0%</span></div><div class="progress-bar"><div class="progress-fill" id="secFill"></div></div></div>
+                </div>
+                <div class="status-bar"><span><span class="status-dot"></span> SYS: ACTIVE</span><span>VAULT-TEC v.4.77</span><span id="secStatus">SEC: LOCKED</span></div>
+                <button class="btn full-width" id="accessBtn" style="display:none;margin-top:15px;">■ ПОЛУЧИТЬ ДОСТУП</button>
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <button class="btn" id="skipBtn" style="display:none;">▶ ПРОПУСТИТЬ</button>
+                    <button class="btn" id="themeBtn">⚙ ТЕМА</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="panel modal"><div class="panel-inner">
+            <div class="modal-title">АВТОРИЗАЦИЯ</div>
+            <div id="loginError" style="text-align:center;color:var(--danger);min-height:20px;font-size:0.7rem;letter-spacing:2px;margin-bottom:15px;"></div>
+            <select class="select w-full" id="memberSelect" style="margin-bottom:15px;"><option value="">— ВЫБЕРИТЕ ПЕРСОНАЖА —</option></select>
+            <input type="password" class="input w-full" id="passwordInput" placeholder="ПАРОЛЬ" maxlength="32" style="margin-bottom:15px;" autocomplete="off">
+            <button class="btn full-width" id="loginBtn">■ ВОЙТИ</button>
+            <button class="btn full-width" id="loginCancelBtn" style="margin-top:8px;background:rgba(40,0,0,0.4);">◀ НАЗАД</button>
+            <div id="loginHint" style="text-align:center;color:var(--text-dim);font-size:0.6rem;letter-spacing:2px;margin-top:10px;"></div>
+        </div></div>
+    </div>
+
+    <div id="mainInterface">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-logo">◈ S.R.V.L.</div>
+            <div class="sidebar-nav" id="sidebarNav">
+                <div class="nav-item active" data-page="status"><span class="nav-icon">🏠</span>СТАТУС</div>
+                <div class="nav-item" data-page="data"><span class="nav-icon">📜</span>ДАННЫЕ</div>
+                <div class="nav-item" data-page="protocol"><span class="nav-icon">⚙️</span>ПРОТОКОЛ</div>
+                <div class="nav-item" data-page="registr"><span class="nav-icon">👥</span>РЕГИСТР</div>
+                <div class="nav-item" data-page="applications"><span class="nav-icon">📋</span>АНКЕТЫ</div>
+                <div class="nav-item" data-page="dossiers"><span class="nav-icon">📁</span>ДОСЬЕ</div>
+                <div class="nav-item" data-page="laboratory"><span class="nav-icon">🔬</span>ЛАБОРАТОРИЯ</div>
+                <div class="nav-item" data-page="medbay"><span class="nav-icon">💉</span>МЕДОТСЕК</div>
+                <div class="nav-item" data-page="armory"><span class="nav-icon">🔫</span>КХО</div>
+                <div class="nav-item" data-page="archive"><span class="nav-icon">🖼️</span>АРХИВ</div>
+                <div class="nav-item" data-page="contacts"><span class="nav-icon">📡</span>СВЯЗЬ</div>
+                <div class="nav-item" data-page="mail"><span class="nav-icon">📧</span>ПОЧТА</div>
+                <div class="nav-item" data-page="chat"><span class="nav-icon">💬</span>ЧАТ</div>
+                <div class="nav-item" data-page="admin" id="adminNavItem" style="display:none;"><span class="nav-icon">🔐</span>АДМИН</div>
+            </div>
+            <div style="padding:15px;border-top:1px solid var(--border);font-size:0.6rem;color:var(--text-dim);text-align:center;" id="sidebarUser"></div>
+        </div>
+        <div class="main-content">
+            <div class="top-bar">
+                <span id="currentPageTitle">СТАТУС</span>
+                <div class="user-info">
+                    <span id="currentUser">ГОСТЬ</span>
+                    <span id="onlineStatus" style="color:var(--accent);">●</span>
+                    <button class="btn small" id="logoutBtn">ВЫХОД</button>
+                </div>
+            </div>
+            <div class="content-area" id="contentArea"></div>
+        </div>
+    </div>
+
+    <div class="sound-panel" id="soundPanel">
+        <span class="sound-icon" id="soundIcon" title="Вкл/Выкл звук">🔊</span>
+        <input type="range" class="sound-slider" id="soundSlider" min="0" max="100" value="30" title="Громкость">
+    </div>
+    <div id="toastContainer"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, set, update, remove, push, onValue, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDV5j5TwKBIE9FgR2NvCw4akWIEXVRUJv8",
+            authDomain: "srvl-cb04b.firebaseapp.com",
+            databaseURL: "https://srvl-cb04b-default-rtdb.firebaseio.com",
+            projectId: "srvl-cb04b",
+            storageBucket: "srvl-cb04b.firebasestorage.app",
+            messagingSenderId: "415152723383",
+            appId: "1:415152723383:web:458d0a068a832bd4a54432",
+            measurementId: "G-JC5LG9D4WC"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const state = {
+            currentUser: null,
+            isAdmin: false,
+            isDeveloper: false,
+            currentPage: 'status',
+            members: [],
+            membersLoaded: false,
+            membersLastLoad: 0,
+            soundEnabled: true,
+            soundVolume: 0.3,
+            theme: 'green',
+            lockoutUntil: null,
+            failedAttempts: 0,
+            adminPassword: 'admin123',
+            chatListener: null,
+        };
+
+        // ============ АУДИО ============
+        let audioCtx = null,
+            masterGain = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioCtx.createGain();
+                masterGain.connect(audioCtx.destination);
+                masterGain.gain.value = state.soundVolume;
+            }
+        }
+
+        function playBeep(f = 800, d = 0.1, t = 'square', v = 0.1) { if (!state.soundEnabled || !audioCtx) return; try { const
+                o = audioCtx.createOscillator(),
+                g = audioCtx.createGain();
+                o.type = t;
+                o.frequency.value = f;
+                g.gain.value = v;
+                o.connect(g);
+                g.connect(masterGain);
+                o.start();
+                o.stop(audioCtx.currentTime + d); } catch (e) {} }
+
+        function sfxTyping() { playBeep(600 + Math.random() * 400, 0.03); }
+
+        function sfxClick() { playBeep(400, 0.06); }
+
+        function sfxUnlock() { playBeep(600, 0.1);
+            setTimeout(() => playBeep(900, 0.15), 100); }
+
+        function sfxError() { playBeep(200, 0.2, 'sawtooth'); }
+
+        // ============ DOM-УТИЛИТЫ ============
+        const $ = s => document.querySelector(s);
+        const $$ = s => document.querySelectorAll(s);
+        const loginScreen = $('#loginScreen'),
+            mainInterface = $('#mainInterface'),
+            loginModal = $('#loginModal'),
+            contentArea = $('#contentArea'),
+            glitchOverlay = $('#glitchOverlay'),
+            toastContainer = $('#toastContainer'),
+            sidebar = $('#sidebar'),
+            hamburgerBtn = $('#hamburgerBtn');
+
+        // ============ ГАМБУРГЕР-МЕНЮ ============
+        hamburgerBtn.addEventListener('click', () => { sidebar.classList.toggle('open');
+            sfxClick(); });
+        document.addEventListener('click', (e) => { if (!sidebar.contains(e.target) && e.target !== hamburgerBtn && sidebar
+                .classList.contains('open')) { sidebar.classList.remove('open'); } });
+
+        // ============ ПАРТИКЛЫ ============
+        const canvas = $('#particlesCanvas'),
+            ctx = canvas.getContext('2d');
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+        const isMobile = innerWidth < 700;
+        const particles = Array.from({ length: isMobile ? 8 : 25 }, () => ({ x: Math.random() * canvas.width, y: Math.random() *
+                canvas.height, size: Math.random() * 2 + 0.5, speedY: Math.random() * 0.5 + 0.1, opacity: Math.random() * 0.5 +
+                0.1 }));
+        let particleFPS = isMobile ? 30 : 60;
+        let lastParticleTime = 0;
+
+        function animParticles(timestamp) {
+            if (timestamp - lastParticleTime < 1000 / particleFPS) { requestAnimationFrame(animParticles); return; }
+            lastParticleTime = timestamp;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const ac = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+            particles.forEach(p => {
+                p.y -= p.speedY;
+                if (p.y < 0) { p.y = canvas.height;
+                    p.x = Math.random() * canvas.width; }
+                const m = ac.match(/\d+/g);
+                ctx.fillStyle = m ? `rgba(${m[0]},${m[1]},${m[2]},${p.opacity})` : ac;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+            });
+            requestAnimationFrame(animParticles);
+        }
+        requestAnimationFrame(animParticles);
+
+        // ============ ТЕМА ============
+        function setTheme(t) { state.theme = t;
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('srvl-theme', t); }
+        setTheme(localStorage.getItem('srvl-theme') || 'green');
+        $('#themeBtn').addEventListener('click', () => { setTheme(state.theme === 'green' ? 'amber' : 'green');
+            sfxClick(); });
+
+        // ============ ЗВУК ============
+        const soundSlider = $('#soundSlider'),
+            soundIcon = $('#soundIcon');
+        const sv = localStorage.getItem('srvl-volume');
+        if (sv !== null) { state.soundVolume = parseFloat(sv);
+            soundSlider.value = Math.round(state.soundVolume * 100); if (state.soundVolume === 0) { state.soundEnabled =
+                false;
+                soundIcon.textContent = '🔇'; } }
+        soundSlider.addEventListener('input', () => { state.soundVolume = soundSlider.value / 100; if (masterGain) masterGain
+                .gain.value = state.soundVolume;
+            localStorage.setItem('srvl-volume', state.soundVolume);
+            state.soundEnabled = state.soundVolume > 0;
+            soundIcon.textContent = state.soundEnabled ? '🔊' : '🔇'; });
+        soundIcon.addEventListener('click', () => { if (state.soundEnabled && state.soundVolume > 0) { state.soundEnabled =
+                    false;
+                soundIcon.textContent = '🔇';
+                soundSlider.value = 0; if (masterGain) masterGain.gain.value = 0; } else { state.soundEnabled = true;
+                state.soundVolume = 0.3;
+                soundSlider.value = 30; if (masterGain) masterGain.gain.value = 0.3;
+                soundIcon.textContent = '🔊'; } initAudio(); });
+
+        function toast(msg, d = 3000) { const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = msg;
+            toastContainer.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0';
+                t.style.transition = 'opacity 0.3s';
+                setTimeout(() => t.remove(), 300); }, d); }
+
+        // ============ АНИМАЦИЯ ВХОДА ============
+        const codeLinesData = [{ text: '<span class="comment">// S.R.V.L. UNIFIED TERMINAL OS v2.0</span>', delay: 300,
+                bar: null }, { text: '<span class="keyword">INIT</span> <span class="string">"VAULT-TEC_SECURE_TERMINAL_2.0"</span>',
+                delay: 500, bar: null }, { text: '<span class="comment">// Copyright 2077 ROBCO Industries</span>',
+                delay: 300, bar: null }, { text: '', delay: 200, bar: null }, { text: '<span class="bracket">[</span> ЯДРО <span class="bracket">]</span> Загрузка ядра...',
+                delay: 400, bar: 'core' }, { text: '  ├─ <span class="string">memory_check</span> <span class="bracket">::</span> <span class="success">OK</span> <span class="number">(128K)</span>',
+                delay: 500, bar: 'core' }, { text: '  ├─ <span class="string">bios_init</span> <span class="bracket">::</span> <span class="success">OK</span>',
+                delay: 400, bar: 'core' }, { text: '  ├─ <span class="string">cpu_test</span> <span class="bracket">::</span> <span class="success">PASSED</span>',
+                delay: 400, bar: 'core' }, { text: '  └─ <span class="string">core_ready</span> <span class="bracket">::</span> <span class="success">DONE</span>',
+                delay: 350, bar: 'core' }, { text: '', delay: 200, bar: null }, { text: '<span class="bracket">[</span> ПАМЯТЬ <span class="bracket">]</span> Инициализация...',
+                delay: 500, bar: 'mem' }, { text: '  ├─ <span class="string">ram_test</span> <span class="bracket">::</span> <span class="success">OK</span>',
+                delay: 400, bar: 'mem' }, { text: '  └─ <span class="string">storage_mount</span> <span class="bracket">::</span> <span class="success">MOUNTED</span>',
+                delay: 400, bar: 'mem' }, { text: '', delay: 200, bar: null }, { text: '<span class="bracket">[</span> СЕТЬ <span class="bracket">]</span> Подключение...',
+                delay: 500, bar: 'net' }, { text: '  ├─ <span class="string">handshake</span> <span class="bracket">::</span> <span class="success">ESTABLISHED</span>',
+                delay: 500, bar: 'net' }, { text: '  └─ <span class="string">encryption</span> <span class="bracket">::</span> <span class="success">AES-256</span>',
+                delay: 400, bar: 'net' }, { text: '', delay: 200, bar: null }, { text: '<span class="bracket">[</span> ЗАЩИТА <span class="bracket">]</span> Верификация...',
+                delay: 600, bar: 'sec' }, { text: '  ├─ <span class="string">retina_scan</span> <span class="bracket">::</span> <span class="success">MATCH</span>',
+                delay: 700, bar: 'sec' }, { text: '  └─ <span class="string">firewall</span> <span class="bracket">::</span> <span class="success">ACTIVE</span>',
+                delay: 400, bar: 'sec' }, { text: '', delay: 200, bar: null }, { text: '<span class="bracket">[</span> S.R.V.L. <span class="bracket">]</span> Загрузка протоколов...',
+                delay: 500, bar: null }, { text: '  └─ <span class="string">secure_channel</span> <span class="bracket">::</span> <span class="success">OPEN</span>',
+                delay: 400, bar: null }, ];
+        const codeContainer = $('#codeLines');
+        const bars = {
+            core: { fill: $('#coreFill'), pct: $('#corePct'), done: 0, total: codeLinesData.filter(l => l.bar ===
+                    'core').length },
+            mem: { fill: $('#memFill'), pct: $('#memPct'), done: 0, total: codeLinesData.filter(l => l.bar === 'mem')
+                    .length },
+            net: { fill: $('#netFill'), pct: $('#netPct'), done: 0, total: codeLinesData.filter(l => l.bar === 'net')
+                    .length },
+            sec: { fill: $('#secFill'), pct: $('#secPct'), done: 0, total: codeLinesData.filter(l => l.bar === 'sec')
+                    .length },
+        };
+        let animLineIdx = 0,
+            animComplete = false,
+            animStarted = false;
+
+        function updateBar(n) { const b = bars[n]; if (!b) return;
+            b.done++; const p = Math.floor((b.done / b.total) * 100);
+            b.fill.style.width = p + '%';
+            b.pct.textContent = p + '%'; }
+
+        function addCodeLine(i) { if (i >= codeLinesData.length) { animComplete = true;
+                Object.values(bars).forEach(b => { b.fill.style.width = '100%';
+                    b.pct.textContent = '100%'; });
+                setTimeout(() => { $('#accessBtn').style.display = 'block';
+                    $('#skipBtn').style.display = 'none';
+                    $('#secStatus').textContent = 'SEC: UNLOCKED';
+                    $('#secStatus').style.color = 'var(--accent-light)';
+                    sfxUnlock(); }, 400); return; } const ld = codeLinesData[i]; const div = document.createElement('div');
+            div.className = 'code-line';
+            div.innerHTML = ld.text || '&nbsp;';
+            codeContainer.appendChild(div);
+            setTimeout(() => div.classList.add('visible'), 50); if (ld.bar) updateBar(ld.bar);
+            sfxTyping(); if (Math.random() > 0.7) { glitchOverlay.classList.add('active');
+                setTimeout(() => glitchOverlay.classList.remove('active'), 80); }
+            codeContainer.scrollTop = codeContainer.scrollHeight;
+            animLineIdx++;
+            setTimeout(() => addCodeLine(animLineIdx), ld.delay); }
+
+        function startAnimation() { if (animStarted) return;
+            animStarted = true;
+            codeContainer.innerHTML = '';
+            animLineIdx = 0;
+            animComplete = false;
+            Object.values(bars).forEach(b => { b.done = 0;
+                b.fill.style.width = '0%';
+                b.pct.textContent = '0%'; });
+            $('#accessBtn').style.display = 'none';
+            $('#secStatus').textContent = 'SEC: LOCKED';
+            $('#secStatus').style.color = 'var(--text-dim)';
+            $('#skipBtn').style.display = 'block';
+            initAudio();
+            document.body.classList.add('animating');
+            setTimeout(() => addCodeLine(0), 800); }
+
+        function skipAnimation() {
+            codeContainer.innerHTML = '';
+            codeLinesData.forEach(ld => { const d = document.createElement('div');
+                d.className = 'code-line visible';
+                d.innerHTML = ld.text || '&nbsp;';
+                codeContainer.appendChild(d); });
+            Object.values(bars).forEach(b => { b.fill.style.width = '100%';
+                b.pct.textContent = '100%'; });
+            $('#accessBtn').style.display = 'block';
+            $('#skipBtn').style.display = 'none';
+            $('#secStatus').textContent = 'SEC: UNLOCKED';
+            $('#secStatus').style.color = 'var(--accent-light)';
+            animComplete = true;
+            animStarted = true;
+            initAudio();
+            sfxUnlock();
+        }
+        $('#accessBtn').addEventListener('click', () => { if (animComplete) openLoginModal(); });
+        $('#skipBtn').addEventListener('click', skipAnimation);
+
+        // ============ МОДАЛЬНОЕ ОКНО ВХОДА ============
+        function openLoginModal() { glitchOverlay.classList.add('crash');
+            sfxError();
+            setTimeout(() => { glitchOverlay.classList.remove('crash');
+                loginModal.classList.add('active');
+                loadMembersForLogin(); }, 500); }
+
+        function closeLoginModal() { loginModal.classList.remove('active');
+            $('#loginError').textContent = '';
+            $('#passwordInput').value = '';
+            $('#loginHint').textContent = '';
+            state.failedAttempts = 0;
+            state.lockoutUntil = null; }
+        async function loadMembersForLogin() { try { await loadMembers(); const sel = $('#memberSelect');
+                sel.innerHTML = '<option value="">— ВЫБЕРИТЕ ПЕРСОНАЖА —</option>'; if (state.members.length > 0) { state
+                        .members.forEach(m => { if (m.status === 'active') { const o = document.createElement(
+                                'option');
+                            o.value = m.id;
+                            o.textContent = `${m.name} [${m.role||'Н/Д'}]`;
+                            sel.appendChild(o); } }); } else { sel.innerHTML =
+                        '<option value="">— НЕТ ПЕРСОНАЖЕЙ —</option>';
+                    $('#loginHint').textContent = 'Используйте DEV-вход'; } } catch (e) { console.error(e);
+                $('#loginError').textContent = 'ОШИБКА ПОДКЛЮЧЕНИЯ'; } }
+        $('#loginCancelBtn').addEventListener('click', closeLoginModal);
+        $('#loginBtn').addEventListener('click', async () => { const selId = $('#memberSelect').value; const pw = $(
+                '#passwordInput').value.trim(); if (state.lockoutUntil && Date.now() < state.lockoutUntil) { const rem = Math
+                    .ceil((state.lockoutUntil - Date.now()) / 1000);
+                $('#loginError').textContent = `ЗАБЛОКИРОВАН НА ${rem} СЕК.`;
+                sfxError(); return; } if (pw === '2007') { const ans = prompt(
+                    'ЧЕМ ЯВЛЯЕТСЯ ЧЕЛОВЕЧЕСТВО?\n\n(ответ из одного слова)'); if (ans && ans.trim().toLowerCase() ===
+                    'ошибка') { state.currentUser = { id: 'dev', name: 'РАЗРАБОТЧИК', role: 'Разработчик',
+                        profession: 'Dev', department: 'Все' };
+                    state.isDeveloper = true;
+                    state.isAdmin = true;
+                    closeLoginModal();
+                    enterMainInterface();
+                    sfxUnlock(); return; } else { $('#loginError').textContent = 'НЕВЕРНЫЙ ОТВЕТ';
+                    sfxError(); return; } } if (selId === '' && pw === state.adminPassword) { state.currentUser = { id: 'admin',
+                    name: 'АДМИНИСТРАТОР', role: 'Админ', profession: 'Admin', department: 'Все' };
+                state.isAdmin = true;
+                state.isDeveloper = false;
+                closeLoginModal();
+                enterMainInterface();
+                sfxUnlock(); return; } if (!selId) { $('#loginError').textContent = 'ВЫБЕРИТЕ ПЕРСОНАЖА';
+                sfxError(); return; } if (!pw) { $('#loginError').textContent = 'ВВЕДИТЕ ПАРОЛЬ';
+                sfxError(); return; } try { const snap = await get(ref(db, `members/${selId}`)); if (!snap.exists()) { $(
+                        '#loginError').textContent = 'НЕ НАЙДЕН';
+                    sfxError(); return; } const md = snap.val(); if (!md.password) { await set(ref(db,
+                        `members/${selId}/password`), pw);
+                    $('#loginError').style.color = 'var(--accent-light)';
+                    $('#loginError').textContent = 'ПАРОЛЬ УСТАНОВЛЕН!';
+                    state.currentUser = { id: selId, ...md, password: pw };
+                    closeLoginModal();
+                    enterMainInterface();
+                    sfxUnlock(); } else if (md.password === pw) { state.currentUser = { id: selId, ...md };
+                    state.failedAttempts = 0;
+                    state.lockoutUntil = null;
+                    closeLoginModal();
+                    enterMainInterface();
+                    sfxUnlock(); } else { state.failedAttempts++;
+                    $('#loginError').textContent = `НЕВЕРНО (${state.failedAttempts}/2)`;
+                    sfxError(); if (state.failedAttempts >= 2) { state.lockoutUntil = Date.now() + 15 * 60 * 1000;
+                        $('#loginError').textContent = 'БЛОКИРОВКА 15 МИН.'; } } } catch (e) { console.error(e);
+                $('#loginError').textContent = 'ОШИБКА ТЕРМИНАЛА'; } });
+
+        // ============ ВХОД В ИНТЕРФЕЙС ============
+        function enterMainInterface() { loginScreen.classList.add('hidden');
+            mainInterface.classList.add('active');
+            document.body.classList.remove('animating');
+            $('#currentUser').textContent = state.currentUser.name;
+            $('#sidebarUser').textContent =
+                `${state.currentUser.role} | ${state.currentUser.profession||'Н/Д'}`; if (state.isAdmin || state.isDeveloper) {
+                $('#adminNavItem').style.display = 'flex'; }
+            updateOnlineStatus();
+            navigateTo('status'); }
+
+        function updateOnlineStatus() { if (state.currentUser) { const userRef = ref(db,
+                    `online/${state.currentUser.id}`);
+                set(userRef, { name: state.currentUser.name, lastSeen: Date.now() }).catch(() => {});
+                window.addEventListener('beforeunload', () => { remove(userRef).catch(() => {}); }); } }
+        $('#logoutBtn').addEventListener('click', () => { if (state.currentUser && state.currentUser.id !== 'dev' && state
+                .currentUser.id !== 'admin') { remove(ref(db, `online/${state.currentUser.id}`)).catch(() => {}); } if (state
+                .chatListener) { off(state.chatListener);
+                state.chatListener = null; }
+            state.currentUser = null;
+            state.isAdmin = false;
+            state.isDeveloper = false;
+            mainInterface.classList.remove('active');
+            loginScreen.classList.remove('hidden');
+            document.body.classList.add('animating');
+            $('#adminNavItem').style.display = 'none';
+            $('#currentUser').textContent = 'ГОСТЬ';
+            closeLoginModal();
+            startAnimation(); });
+
+        // ============ НАВИГАЦИЯ ============
+        const pages = { status: 'СТАТУС', data: 'ДАННЫЕ', protocol: 'ПРОТОКОЛ', registr: 'РЕГИСТР', applications: 'АНКЕТЫ',
+            dossiers: 'ДОСЬЕ', laboratory: 'ЛАБОРАТОРИЯ', medbay: 'МЕДОТСЕК', armory: 'КХО', archive: 'АРХИВ',
+            contacts: 'СВЯЗЬ', mail: 'ПОЧТА', chat: 'ЧАТ', admin: 'АДМИН' };
+
+        function navigateTo(page) {
+            state.currentPage = page;
+            $('#currentPageTitle').textContent = pages[page] || page.toUpperCase();
+            document.title = `S.R.V.L. // ${pages[page]||''}`;
+            $$('.nav-item').forEach(el => el.classList.remove('active'));
+            const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
+            if (navItem) navItem.classList.add('active');
+            if (isMobile) sidebar.classList.remove('open');
+            renderPage(page);
+        }
+        $('#sidebarNav').addEventListener('click', (e) => { const item = e.target.closest('.nav-item'); if (!item) return;
+            const page = item.dataset.page; if (page === 'admin' && !state.isAdmin && !state.isDeveloper) { toast(
+                'ДОСТУП ЗАПРЕЩЁН'); return; }
+            sfxClick();
+            navigateTo(page); });
+
+        // ============ ЗАГРУЗКА УЧАСТНИКОВ (С КЕШЕМ) ============
+        async function loadMembers(force = false) { const now = Date.now(); if (!force && state.membersLoaded && (now - state
+                    .membersLastLoad) < 300000) { return state.members; } try { const snap = await get(ref(db, 'members'));
+                state.members = []; if (snap.exists()) { const data = snap.val();
+                    Object.keys(data).forEach(k => { state.members.push({ id: k, ...data[k] }); }); }
+                state.membersLoaded = true;
+                state.membersLastLoad = now; } catch (e) { console.error(e); } return state.members; }
+
+        // ============ РЕНДЕР СТРАНИЦ (БЕЗ КЕША, С ДЕЛЕГИРОВАНИЕМ) ============
+        async function renderPage(page) {
+            contentArea.innerHTML =
+                '<div style="text-align:center;padding:40px;color:var(--text-dim);">ЗАГРУЗКА...</div>';
+            try {
+                switch (page) {
+                    case 'status':
+                        await renderStatus();
+                        break;
+                    case 'data':
+                        await renderData();
+                        break;
+                    case 'protocol':
+                        await renderProtocol();
+                        break;
+                    case 'registr':
+                        await renderRegistr();
+                        break;
+                    case 'applications':
+                        await renderApplications();
+                        break;
+                    case 'dossiers':
+                        await renderDossiers();
+                        break;
+                    case 'laboratory':
+                        await renderRecordSection('laboratory', 'ЛАБОРАТОРИЯ');
+                        break;
+                    case 'medbay':
+                        await renderRecordSection('medbay', 'МЕДОТСЕК');
+                        break;
+                    case 'armory':
+                        await renderRecordSection('armory', 'КХО');
+                        break;
+                    case 'archive':
+                        await renderArchive();
+                        break;
+                    case 'contacts':
+                        await renderContacts();
+                        break;
+                    case 'mail':
+                        await renderMail();
+                        break;
+                    case 'chat':
+                        await renderChat();
+                        break;
+                    case 'admin':
+                        await renderAdmin();
+                        break;
+                    default:
+                        contentArea.innerHTML = '<p>РАЗДЕЛ НЕ НАЙДЕН</p>';
+                }
+            } catch (e) {
+                console.error(e);
+                contentArea.innerHTML =
+                    '<div style="text-align:center;padding:40px;color:var(--danger);">ТЕРМИНАЛ НЕДОСТУПЕН</div>';
+            }
+            // Навешиваем делегированные обработчики для страницы
+            attachPageDelegates(page);
+        }
+
+        // ============ ДЕЛЕГИРОВАННЫЕ ОБРАБОТЧИКИ ============
+        function attachPageDelegates(page) {
+            // Удаляем старый обработчик
+            contentArea.removeEventListener('click', contentClickHandler);
+            // Вешаем новый
+            contentArea.addEventListener('click', contentClickHandler);
+
+            function contentClickHandler(e) {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+
+                // Редакторы страниц
+                if (btn.id === 'editStatusBtn') openEditor('status', 'СТАТУС');
+                if (btn.id === 'editDataBtn') openEditor('data', 'ДАННЫЕ');
+                if (btn.id === 'editProtocolBtn') openEditor('protocol', 'ПРОТОКОЛ');
+                if (btn.id === 'editContactsBtn') openEditor('contacts', 'СВЯЗЬ');
+
+                // Анкета
+                if (btn.id === 'newAppBtn') openFullApplicationForm();
+
+                // Досье
+                if (btn.classList.contains('editDossierBtn')) {
+                    const id = btn.dataset.id;
+                    get(ref(db, `dossiers/${id}`)).then(snap => { if (snap.exists()) openDossierEditor(id, snap
+                            .val()); });
+                }
+
+                // Записи (ЛАБ/МЕД/КХО)
+                if (btn.id === 'addRecordBtn') {
+                    const section = state.currentPage;
+                    const titles = { laboratory: 'ЛАБОРАТОРИЯ', medbay: 'МЕДОТСЕК', armory: 'КХО' };
+                    openRecordForm(section, titles[section] || section.toUpperCase());
+                }
+
+                // Архив
+                if (btn.id === 'uploadArchiveBtn') {
+                    const name = prompt('НАЗВАНИЕ ФАЙЛА:');
+                    const url = prompt('ССЫЛКА НА ФАЙЛ:');
+                    if (name && url) {
+                        push(ref(db, 'archive'), { name, url, uploadedBy: state.currentUser?.name || 'Гость',
+                            uploadedAt: Date.now() });
+                        toast('ФАЙЛ ДОБАВЛЕН');
+                        renderArchive();
+                    }
+                }
+
+                // Почта
+                if (btn.id === 'newMailBtn') openMailForm();
+            }
+        }
+
+        async function getPageData(section) { try { const snap = await get(ref(db, `pages/${section}`)); return snap.exists() ?
+                    snap.val().content : ''; } catch (e) { return ''; } }
+
+        // ============ СТРАНИЦЫ ============
+        async function renderStatus() { const content = await getPageData('status'); let eventsHtml = ''; try { const
+                eventsSnap = await get(ref(db, 'events')); if (eventsSnap.exists()) { const evts = Object.values(eventsSnap
+                        .val()).sort((a, b) => a.date - b.date).slice(0, 5);
+                    eventsHtml = evts.map(e =>
+                        `<div class="card"><div class="card-title">📅 ${e.title||'СОБЫТИЕ'}</div><div class="card-text">${new Date(e.date).toLocaleDateString()} — ${e.desc||''}</div></div>`
+                        ).join(''); } } catch (e) {}
+            contentArea.innerHTML =
+                `<h1 class="section-title">СТАТУС</h1><div class="card"><div class="card-title">АКТИВНОСТЬ КЛАНА</div><div class="card-text">${content||'Информация пока не добавлена.'}</div></div>${eventsHtml?`<h3 style="color:var(--accent);letter-spacing:3px;margin-top:20px;">БЛИЖАЙШИЕ СОБЫТИЯ</h3>${eventsHtml}`:''}${state.isAdmin||state.isDeveloper?'<button class="btn" id="editStatusBtn">✎ РЕДАКТИРОВАТЬ</button>':''}`;
+        }
+        async function renderData() { const content = await getPageData('data');
+            contentArea.innerHTML =
+                `<h1 class="section-title">ДАННЫЕ</h1><div class="card"><div class="card-title">О КЛАНЕ</div><div class="card-text">${content||'Информация пока не добавлена.'}</div></div>${state.isAdmin||state.isDeveloper?'<button class="btn" id="editDataBtn">✎ РЕДАКТИРОВАТЬ</button>':''}`;
+        }
+        async function renderProtocol() { const content = await getPageData('protocol');
+            contentArea.innerHTML =
+                `<h1 class="section-title">ПРОТОКОЛ</h1><div class="card"><div class="card-title">ПРАВИЛА</div><div class="card-text">${content||'Правила пока не добавлены.'}</div></div>${state.isAdmin||state.isDeveloper?'<button class="btn" id="editProtocolBtn">✎ РЕДАКТИРОВАТЬ</button>':''}`;
+        }
+        async function renderRegistr() { await loadMembers(); const active = state.members.filter(m => m.status === 'active');
+            let rows = active.map(m =>
+                `<tr><td>${m.name}</td><td>${m.role||'Н/Д'}</td><td>${m.profession||'Н/Д'}</td><td>${m.department||'Н/Д'}</td></tr>`
+                ).join('');
+            contentArea.innerHTML =
+                `<h1 class="section-title">РЕГИСТР</h1><div style="overflow-x:auto;"><table class="table"><thead><tr><th>Имя</th><th>Доступ</th><th>Профессия</th><th>Отдел</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Нет участников</td></tr>'}</tbody></table></div>`; }
+        async function renderApplications() { if (!state.currentUser) { contentArea.innerHTML =
+                    '<p>ВОЙДИТЕ ЧТОБЫ ПОДАТЬ АНКЕТУ</p>'; return; } let html =
+                '<h1 class="section-title">АНКЕТЫ</h1><button class="btn" id="newAppBtn">+ ПОДАТЬ АНКЕТУ</button><br><br>'; try {
+                const snap = await get(ref(db, 'applications')); if (snap.exists()) { const data = snap.val();
+                    Object.keys(data).forEach(k => { const a = data[k];
+                        html +=
+                            `<div class="card"><div class="card-title">${a.name||'БЕЗ ИМЕНИ'} [${a.status||'pending'}]</div><div class="card-text">Должность: ${a.position||'Н/Д'} | Отдел: ${a.department||'Н/Д'}</div></div>`; }); } else { html +=
+                        '<p>Анкет пока нет.</p>'; } } catch (e) { html += '<p>ОШИБКА ЗАГРУЗКИ</p>'; }
+            contentArea.innerHTML = html; }
+
+        function openFullApplicationForm() { const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+        <div class="panel modal" style="width:750px;"><div class="panel-inner">
+          <div class="modal-title">ПОДАЧА АНКЕТЫ</div>
+          <div style="color:var(--accent);letter-spacing:2px;margin-bottom:15px;font-size:0.8rem;">ОСНОВНЫЕ ДАННЫЕ</div>
+          <div class="form-row"><div class="form-group"><label class="form-label">.☘️ ˖ Имя</label><input class="input w-full" id="appName"></div><div class="form-group"><label class="form-label">.☘️ ˖ Пол</label><select class="select w-full" id="appGender"><option>М</option><option>Ж</option><option>Другое</option></select></div></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">.☘️ ˖ Дата рождения</label><input class="input w-full" id="appBirth" placeholder="ДД.ММ. + возраст"></div><div class="form-group"><label class="form-label">.☘️ ˖ Раса</label><input class="input w-full" id="appRace"></div></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">.☘️ ˖ Должность</label><input class="input w-full" id="appPosition"></div><div class="form-group"><label class="form-label">.☘️ ˖ Отдел/Специализация</label><input class="input w-full" id="appDepartment"></div></div>
+          <div style="color:var(--accent);letter-spacing:2px;margin:15px 0;font-size:0.8rem;">ФИЗИЧЕСКИЕ ПАРАМЕТРЫ</div>
+          <div class="form-row"><div class="form-group"><label class="form-label">•| Рост (см)</label><input class="input w-full" id="appHeight"></div><div class="form-group"><label class="form-label">•| Вес (кг)</label><input class="input w-full" id="appWeight"></div></div>
+          <div class="form-group"><label class="form-label">•| Отличительные черты</label><textarea class="textarea w-full" id="appFeatures" placeholder="Шрамы, аномалии, импланты..."></textarea></div>
+          <div style="color:var(--accent);letter-spacing:2px;margin:15px 0;font-size:0.8rem;">ПРОФЕССИОНАЛЬНЫЕ ДАННЫЕ</div>
+          <div class="form-group"><label class="form-label">•| Навыки (3 ключевых + уровень)</label><textarea class="textarea w-full" id="appSkills"></textarea></div>
+          <div class="form-group"><label class="form-label">•| Наставник</label><input class="input w-full" id="appMentor"></div>
+          <div style="color:var(--accent);letter-spacing:2px;margin:15px 0;font-size:0.8rem;">ЛИЧНОСТЬ И БИОГРАФИЯ</div>
+          <div class="form-group"><label class="form-label">Краткая история</label><textarea class="textarea w-full" id="appBio"></textarea></div>
+          <div class="form-group"><label class="form-label">Характер</label><input class="input w-full" id="appChar"></div>
+          <div class="form-group"><label class="form-label">Фобии/Слабости</label><input class="input w-full" id="appPhobias"></div>
+          <div style="color:var(--accent);letter-spacing:2px;margin:15px 0;font-size:0.8rem;">ОСОБЫЕ ОТМЕТКИ</div>
+          <div class="form-group"><label class="form-label">Вредные привычки</label><input class="input w-full" id="appHabits"></div>
+          <div class="form-group"><label class="form-label">Хронические болезни</label><input class="input w-full" id="appIllness"></div>
+          <div class="form-group"><label class="form-label">Аллергии/Непереносимости</label><input class="input w-full" id="appAllergies"></div>
+          <div style="color:var(--accent);letter-spacing:2px;margin:15px 0;font-size:0.8rem;">ДОПОЛНИТЕЛЬНО</div>
+          <div class="form-group"><label class="form-label">Хобби</label><input class="input w-full" id="appHobby"></div>
+          <div class="form-group"><label class="form-label">Личные цели</label><input class="input w-full" id="appGoals"></div>
+          <button class="btn full-width" id="submitFullAppBtn">■ ОТПРАВИТЬ</button>
+          <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
+        </div></div>`;
+            document.body.appendChild(modal);
+            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            modal.querySelector('#submitFullAppBtn').addEventListener('click', async () => { const fields = ['appName',
+                    'appGender', 'appBirth', 'appRace', 'appPosition', 'appDepartment', 'appHeight', 'appWeight',
+                    'appFeatures', 'appSkills', 'appMentor', 'appBio', 'appChar', 'appPhobias', 'appHabits',
+                    'appIllness', 'appAllergies', 'appHobby', 'appGoals'
+                ]; const vals = {};
+                fields.forEach(f => { const el = modal.querySelector('#' + f);
+                    vals[f] = el ? el.value : ''; }); const appData = { name: vals['appName'], gender: vals[
+                        'appGender'
+                    ], birth: vals['appBirth'], race: vals['appRace'], position: vals['appPosition'],
+                    department: vals['appDepartment'], height: vals['appHeight'], weight: vals['appWeight'],
+                    features: vals['appFeatures'], skills: vals['appSkills'], mentor: vals['appMentor'], bio: vals[
+                        'appBio'
+                    ], character: vals['appChar'], phobias: vals['appPhobias'], habits: vals['appHabits'],
+                    illness: vals['appIllness'], allergies: vals['appAllergies'], hobby: vals['appHobby'], goals: vals[
+                        'appGoals'
+                    ], status: 'pending', createdAt: Date.now() }; if (!appData.name) { toast('ВВЕДИТЕ ИМЯ');
+                    sfxError(); return; } try { await push(ref(db, 'applications'), appData);
+                    toast('АНКЕТА ОТПРАВЛЕНА');
+                    sfxClick();
+                    modal.remove();
+                    renderApplications(); } catch (e) { toast('ОШИБКА ОТПРАВКИ');
+                    sfxError(); } }); }
+
+        async function renderDossiers() { let html = '<h1 class="section-title">ДОСЬЕ</h1>'; try { const snap = await get(ref(
+                    db, 'dossiers')); if (snap.exists()) { const data = snap.val();
+                    Object.keys(data).forEach(k => { const d = data[k];
+                        html += `
+            <div class="a4-sheet">
+              <div style="text-align:center;color:var(--accent);letter-spacing:4px;font-size:1rem;margin-bottom:20px;">${d.name||'БЕЗ ИМЕНИ'}</div>
+              <div class="a4-field"><span class="a4-label">.☘️ Имя</span><span class="a4-value">${d.name||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">.☘️ Пол</span><span class="a4-value">${d.gender||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">.☘️ Дата рождения</span><span class="a4-value">${d.birth||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">.☘️ Раса</span><span class="a4-value">${d.race||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">.☘️ Должность</span><span class="a4-value">${d.position||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">•| Рост</span><span class="a4-value">${d.height||'—'} см</span></div>
+              <div class="a4-field"><span class="a4-label">•| Вес</span><span class="a4-value">${d.weight||'—'} кг</span></div>
+              <div class="a4-field"><span class="a4-label">•| Отличительные черты</span><span class="a4-value">${d.features||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">Навыки</span><span class="a4-value">${d.skills||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">Наставник</span><span class="a4-value">${d.mentor||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">История</span><span class="a4-value">${d.bio||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">Характер</span><span class="a4-value">${d.character||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">Фобии/Слабости</span><span class="a4-value">${d.phobias||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">Вредные привычки</span><span class="a4-value">${d.habits||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">Хронические болезни</span><span class="a4-value">${d.illness||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">Аллергии</span><span class="a4-value">${d.allergies||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">Хобби</span><span class="a4-value">${d.hobby||'—'}</span></div>
+              <div class="a4-field"><span class="a4-label">Личные цели</span><span class="a4-value">${d.goals||'—'}</span></div>
+              ${state.isAdmin||state.isDeveloper?`<button class="btn small editDossierBtn" data-id="${k}" style="margin-top:10px;">✎ РЕДАКТИРОВАТЬ</button>`:''}
+            </div>`; }); } else { html += '<p>Досье нет.</p>'; } } catch (e) { html +=
+                    '<p>ОШИБКА ЗАГРУЗКИ</p>'; }
+            contentArea.innerHTML = html; }
+
+        function openDossierEditor(id, d) { const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+        <div class="panel modal" style="width:750px;"><div class="panel-inner">
+          <div class="modal-title">РЕДАКТИРОВАНИЕ ДОСЬЕ</div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Имя</label><input class="input w-full" id="editName" value="${d.name||''}"></div><div class="form-group"><label class="form-label">Пол</label><select class="select w-full" id="editGender"><option ${d.gender==='М'?'selected':''}>М</option><option ${d.gender==='Ж'?'selected':''}>Ж</option><option ${d.gender==='Другое'?'selected':''}>Другое</option></select></div></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Дата рождения</label><input class="input w-full" id="editBirth" value="${d.birth||''}"></div><div class="form-group"><label class="form-label">Раса</label><input class="input w-full" id="editRace" value="${d.race||''}"></div></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Должность</label><input class="input w-full" id="editPosition" value="${d.position||''}"></div><div class="form-group"><label class="form-label">Отдел</label><input class="input w-full" id="editDepartment" value="${d.department||''}"></div></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Рост (см)</label><input class="input w-full" id="editHeight" value="${d.height||''}"></div><div class="form-group"><label class="form-label">Вес (кг)</label><input class="input w-full" id="editWeight" value="${d.weight||''}"></div></div>
+          <div class="form-group"><label class="form-label">Отличительные черты</label><textarea class="textarea w-full" id="editFeatures">${d.features||''}</textarea></div>
+          <div class="form-group"><label class="form-label">Навыки</label><textarea class="textarea w-full" id="editSkills">${d.skills||''}</textarea></div>
+          <div class="form-group"><label class="form-label">Наставник</label><input class="input w-full" id="editMentor" value="${d.mentor||''}"></div>
+          <div class="form-group"><label class="form-label">История</label><textarea class="textarea w-full" id="editBio">${d.bio||''}</textarea></div>
+          <div class="form-group"><label class="form-label">Характер</label><input class="input w-full" id="editChar" value="${d.character||''}"></div>
+          <div class="form-group"><label class="form-label">Фобии/Слабости</label><input class="input w-full" id="editPhobias" value="${d.phobias||''}"></div>
+          <div class="form-group"><label class="form-label">Вредные привычки</label><input class="input w-full" id="editHabits" value="${d.habits||''}"></div>
+          <div class="form-group"><label class="form-label">Хронические болезни</label><input class="input w-full" id="editIllness" value="${d.illness||''}"></div>
+          <div class="form-group"><label class="form-label">Аллергии</label><input class="input w-full" id="editAllergies" value="${d.allergies||''}"></div>
+          <div class="form-group"><label class="form-label">Хобби</label><input class="input w-full" id="editHobby" value="${d.hobby||''}"></div>
+          <div class="form-group"><label class="form-label">Личные цели</label><input class="input w-full" id="editGoals" value="${d.goals||''}"></div>
+          <button class="btn full-width" id="saveDossierBtn">■ СОХРАНИТЬ</button>
+          <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
+        </div></div>`;
+            document.body.appendChild(modal);
+            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            modal.querySelector('#saveDossierBtn').addEventListener('click', async () => { const fields = ['editName',
+                    'editGender', 'editBirth', 'editRace', 'editPosition', 'editDepartment', 'editHeight', 'editWeight',
+                    'editFeatures', 'editSkills', 'editMentor', 'editBio', 'editChar', 'editPhobias', 'editHabits',
+                    'editIllness', 'editAllergies', 'editHobby', 'editGoals'
+                ]; const up = {};
+                fields.forEach(f => { const el = modal.querySelector('#' + f);
+                    up[f.replace('edit', '').toLowerCase()] = el ? el.value : ''; });
+                up.name = up.name || d.name;
+                up.gender = up.gender || d.gender; try { await update(ref(db, `dossiers/${id}`), up);
+                    toast('ДОСЬЕ ОБНОВЛЕНО');
+                    sfxClick();
+                    modal.remove();
+                    renderDossiers(); } catch (e) { toast('ОШИБКА');
+                    sfxError(); } }); }
+
+        async function renderRecordSection(section, title) { let html = `<h1 class="section-title">${title}</h1>`; if (state
+                .currentUser) html += '<button class="btn" id="addRecordBtn">+ ДОБАВИТЬ ЗАПИСЬ</button><br><br>'; try { const
+                snap = await get(ref(db, section)); if (snap.exists()) { const data = snap.val();
+                    Object.keys(data).forEach(k => { const r = data[k];
+                        html +=
+                            `<div class="card"><div class="card-title">${r.title||'БЕЗ НАЗВАНИЯ'} [${r.category||'Н/Д'}]</div><div class="card-text">${r.content||''}</div><small style="color:var(--text-dim);">Автор: ${r.author||'Н/Д'}</small></div>`; }); } else { html +=
+                        '<p>Записей пока нет.</p>'; } } catch (e) { html += '<p>ОШИБКА ЗАГРУЗКИ</p>'; }
+            contentArea.innerHTML = html; }
+
+        function openRecordForm(section, title) { const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+        <div class="panel modal"><div class="panel-inner">
+          <div class="modal-title">НОВАЯ ЗАПИСЬ: ${title}</div>
+          <div class="form-group"><label class="form-label">Заголовок</label><input class="input w-full" id="recTitle"></div>
+          <div class="form-group"><label class="form-label">Категория</label><input class="input w-full" id="recCat"></div>
+          <div class="form-group"><label class="form-label">Содержание</label><textarea class="textarea w-full" id="recContent"></textarea></div>
+          <button class="btn full-width" id="submitRecBtn">■ СОХРАНИТЬ</button>
+          <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
+        </div></div>`;
+            document.body.appendChild(modal);
+            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            modal.querySelector('#submitRecBtn').addEventListener('click', async () => { const rec = { title: modal
+                        .querySelector('#recTitle').value, category: modal.querySelector('#recCat').value, content: modal
+                        .querySelector('#recContent').value, author: state.currentUser?.name || 'Гость',
+                    createdAt: Date.now() }; if (!rec.title) { toast('ВВЕДИТЕ ЗАГОЛОВОК'); return; } try { await push(
+                        ref(db, section), rec);
+                    toast('ЗАПИСЬ ДОБАВЛЕНА');
+                    sfxClick();
+                    modal.remove();
+                    renderRecordSection(section, title); } catch (e) { toast('ОШИБКА');
+                    sfxError(); } }); }
+
+        async function renderArchive() { let html = '<h1 class="section-title">АРХИВ</h1>'; if (state.currentUser) html +=
+                '<button class="btn" id="uploadArchiveBtn">+ ЗАГРУЗИТЬ</button><br><br>';
+            html += '<div style="display:flex;flex-wrap:wrap;gap:15px;">'; try { const snap = await get(ref(db, 'archive')); if (
+                    snap.exists()) { const data = snap.val();
+                    Object.keys(data).forEach(k => { const f = data[k];
+                        html +=
+                            `<div class="card" style="width:200px;"><div class="card-title">${f.name||'ФАЙЛ'}</div><a href="${f.url}" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all;">ОТКРЫТЬ</a></div>`; }); } else { html +=
+                        '<p>Файлов нет.</p>'; } } catch (e) { html += '<p>ОШИБКА ЗАГРУЗКИ</p>'; }
+            html += '</div>';
+            contentArea.innerHTML = html; }
+        async function renderContacts() { const content = await getPageData('contacts');
+            contentArea.innerHTML =
+                `<h1 class="section-title">СВЯЗЬ</h1><div class="card"><div class="card-text">${content||'Контакты пока не добавлены.'}</div></div>${state.isAdmin||state.isDeveloper?'<button class="btn" id="editContactsBtn">✎ РЕДАКТИРОВАТЬ</button>':''}`;
+        }
+
+        function openEditor(section, title) { const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+        <div class="panel modal"><div class="panel-inner">
+          <div class="modal-title">РЕДАКТОР: ${title}</div>
+          <textarea class="textarea w-full" id="editorContent" style="min-height:250px;"></textarea>
+          <button class="btn full-width" id="saveEditorBtn" style="margin-top:15px;">■ СОХРАНИТЬ</button>
+          <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
+        </div></div>`;
+            document.body.appendChild(modal);
+            get(ref(db, `pages/${section}`)).then(snap => { if (snap.exists()) modal.querySelector('#editorContent').value =
+                    snap.val().content || ''; }).catch(() => {});
+            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            modal.querySelector('#saveEditorBtn').addEventListener('click', async () => { try { await set(ref(db,
+                            `pages/${section}`), { content: modal.querySelector('#editorContent').value, updatedAt: Date
+                            .now() });
+                    toast('СОХРАНЕНО');
+                    sfxClick();
+                    modal.remove();
+                    renderPage(state.currentPage); } catch (e) { toast('ОШИБКА СОХРАНЕНИЯ');
+                    sfxError(); } }); }
+
+        // ============ ПОЧТА ============
+        async function renderMail() { if (!state.currentUser) { contentArea.innerHTML = '<p>ТОЛЬКО ДЛЯ ПЕРСОНАЖЕЙ</p>'; return; }
+            let html = '<h1 class="section-title">ПОЧТА</h1><button class="btn" id="newMailBtn">+ НОВОЕ ПИСЬМО</button><br><br>'; try {
+                const snap = await get(ref(db, 'mail')); if (snap.exists()) { const data = snap.val();
+                    Object.keys(data).forEach(k => { const m = data[k]; if (m.to === state.currentUser.id || m.to ===
+                            'all' || m.toDepartment === state.currentUser.department) { html +=
+                            `<div class="card"><div class="card-title">ОТ: ${m.from||'Н/Д'} → ${m.to==='all'?'ВСЕМ':m.to}</div><div class="card-text">${m.content||''}</div><small style="color:var(--text-dim);">${new Date(m.timestamp).toLocaleString()}</small></div>`; } }); } else { html +=
+                        '<p>Писем нет.</p>'; } } catch (e) { html += '<p>ОШИБКА ЗАГРУЗКИ</p>'; }
+            contentArea.innerHTML = html; }
+
+        function openMailForm() { const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+        <div class="panel modal"><div class="panel-inner">
+          <div class="modal-title">НОВОЕ ПИСЬМО</div>
+          <div class="form-group"><label class="form-label">Отдел (или "всем")</label><select class="select w-full" id="mailDept"><option value="all">ВСЕМ</option></select></div>
+          <div class="form-group"><label class="form-label">Кому</label><select class="select w-full" id="mailTo"></select></div>
+          <div class="form-group"><label class="form-label">Сообщение</label><textarea class="textarea w-full" id="mailContent"></textarea></div>
+          <button class="btn full-width" id="sendMailBtn">■ ОТПРАВИТЬ</button>
+          <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
+        </div></div>`;
+            document.body.appendChild(modal); const deptSel = modal.querySelector('#mailDept'); const toSel = modal.querySelector(
+                '#mailTo'); const depts = new Set(state.members.map(m => m.department).filter(Boolean));
+            depts.add('all');
+            depts.forEach(d => { const o = document.createElement('option');
+                o.value = d;
+                o.textContent = d.toUpperCase();
+                deptSel.appendChild(o); });
+
+            function updateToSel() { const dept = deptSel.value;
+                toSel.innerHTML = ''; if (dept === 'all') { state.members.filter(m => m.status === 'active' && m.id !==
+                        state.currentUser.id).forEach(m => { const o = document.createElement('option');
+                        o.value = m.id;
+                        o.textContent = m.name;
+                        toSel.appendChild(o); }); } else { state.members.filter(m => m.status === 'active' && m
+                        .department === dept && m.id !== state.currentUser.id).forEach(m => { const o = document
+                            .createElement('option');
+                        o.value = m.id;
+                        o.textContent = m.name;
+                        toSel.appendChild(o); }); } }
+            deptSel.addEventListener('change', updateToSel);
+            updateToSel();
+            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            modal.querySelector('#sendMailBtn').addEventListener('click', async () => { const mail = { from: state.currentUser
+                        .name, fromId: state.currentUser.id, to: toSel.value || 'all', toDepartment: deptSel.value,
+                    content: modal.querySelector('#mailContent').value, timestamp: Date.now() }; if (!mail
+                    .content) { toast('ВВЕДИТЕ СООБЩЕНИЕ'); return; } try { await push(ref(db, 'mail'), mail);
+                    toast('ОТПРАВЛЕНО');
+                    sfxClick();
+                    modal.remove();
+                    renderMail(); } catch (e) { toast('ОШИБКА');
+                    sfxError(); } }); }
+
+        // ============ ЧАТ ============
+        async function renderChat() { if (!state.currentUser) { contentArea.innerHTML = '<p>ТОЛЬКО ДЛЯ ПЕРСОНАЖЕЙ</p>'; return; }
+            contentArea.innerHTML = `
+        <h1 class="section-title">ЧАТ</h1>
+        <div class="chat-container"><div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-row"><input class="chat-input" id="chatInput" placeholder="СООБЩЕНИЕ..."><button class="btn" id="chatSendBtn">▶</button></div>
+        </div>`;
+            const msgDiv = $('#chatMessages'); if (state.chatListener) { off(state.chatListener);
+                state.chatListener = null; } const chatRef = ref(db, 'chat');
+            state.chatListener = onValue(chatRef, (snap) => { msgDiv.innerHTML = ''; if (snap.exists()) { const data = snap
+                        .val();
+                    Object.values(data).sort((a, b) => a.timestamp - b.timestamp).forEach(m => { msgDiv.innerHTML +=
+                            `<div class="chat-msg"><span class="sender">${m.sender}</span> <span class="time">${new Date(m.timestamp).toLocaleTimeString()}</span><br>${m.text}</div>`; }); }
+                msgDiv.scrollTop = msgDiv.scrollHeight; }, (e) => { msgDiv.innerHTML =
+                    '<p style="color:var(--danger);">ОШИБКА ПОДКЛЮЧЕНИЯ К ЧАТУ</p>'; });
+            $('#chatSendBtn').addEventListener('click', sendChat);
+            $('#chatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); }); }
+        async function sendChat() { const input = $('#chatInput'); const text = input.value.trim(); if (!text || !state
+                .currentUser) return; try { await push(ref(db, 'chat'), { sender: state.currentUser.name, senderId: state
+                    .currentUser.id, text, timestamp: Date.now() });
+                input.value = '';
+                playBeep(800, 0.05, 'square', 0.05); } catch (e) { toast('ОШИБКА ОТПРАВКИ'); } }
+
+        // ============ АДМИН-ПАНЕЛЬ ============
+        async function renderAdmin() { if (!state.isAdmin && !state.isDeveloper) { contentArea.innerHTML =
+                    '<p>ДОСТУП ЗАПРЕЩЁН</p>'; return; }
+            contentArea.innerHTML = `
+        <h1 class="section-title">АДМИН-ПАНЕЛЬ</h1>
+        <div class="admin-tabs" id="adminTabs">
+          <div class="admin-tab active" data-atab="members">👥 УЧАСТНИКИ</div>
+          <div class="admin-tab" data-atab="applications">📋 АНКЕТЫ</div>
+          <div class="admin-tab" data-atab="dossiers">📁 ДОСЬЕ</div>
+          <div class="admin-tab" data-atab="pages">📄 СТРАНИЦЫ</div>
+          <div class="admin-tab" data-atab="gallery">🖼️ ГАЛЕРЕЯ</div>
+          <div class="admin-tab" data-atab="records">🔬💉🔫 ЗАПИСИ</div>
+          <div class="admin-tab" data-atab="mailchat">📧💬 ПОЧТА/ЧАТ</div>
+          <div class="admin-tab" data-atab="logs">📜 ЛОГИ</div>
+          <div class="admin-tab" data-atab="warnings">⚠️ ПРЕДУПРЕЖДЕНИЯ</div>
+          <div class="admin-tab" data-atab="calendar">📅 КАЛЕНДАРЬ</div>
+          <div class="admin-tab" data-atab="backup">💾 БЭКАП</div>
+          <div class="admin-tab" data-atab="import">🔄 ИМПОРТ</div>
+          ${state.isDeveloper?'<div class="admin-tab" data-atab="dev">🔐 DEV</div>':''}
+        </div>
+        <div id="adminContent"></div>`;
+            $('#adminTabs').addEventListener('click', (e) => { const tab = e.target.closest('.admin-tab'); if (!tab) return;
+                $$('.admin-tab').forEach(x => x.classList.remove('active'));
+                tab.classList.add('active');
+                renderAdminTab(tab.dataset.atab); });
+            renderAdminTab('members'); }
+
+        async function renderAdminTab(tab) {
+            const ac = $('#adminContent');
+            // Снимаем старый обработчик
+            ac.removeEventListener('click', adminClickHandler);
+            try {
+                switch (tab) {
+                    case 'members':
+                        await loadMembers(true);
+                        let html =
+                            '<h3>УПРАВЛЕНИЕ УЧАСТНИКАМИ</h3><button class="btn" id="addMemberManuallyBtn">+ ДОБАВИТЬ ВРУЧНУЮ</button><br><br>';
+                        state.members.forEach(m => {
+                            html +=
+                                `<div class="card"><div class="card-title">${m.name} (${m.status||'active'})</div><div>Роль: <select class="select roleSelect" data-id="${m.id}"><option ${m.role==='Обычный сотрудник'?'selected':''}>Обычный сотрудник</option><option ${m.role==='Заместитель'?'selected':''}>Заместитель</option><option ${m.role==='Глава'?'selected':''}>Глава</option><option ${m.role==='Смотритель'?'selected':''}>Смотритель</option></select></div><div>Профессия: <input class="input profInput" data-id="${m.id}" value="${m.profession||''}"></div><div>Отдел: <input class="input deptInput" data-id="${m.id}" value="${m.department||''}"></div><button class="btn small saveMemberBtn" data-id="${m.id}">СОХРАНИТЬ</button><button class="btn small danger resetPassBtn" data-id="${m.id}">СБРОС ПАРОЛЯ</button><button class="btn small danger deleteMemberBtn" data-id="${m.id}">УДАЛИТЬ</button></div>`;
+                        });
+                        ac.innerHTML = html || '<p>Нет участников.</p>';
+                        // Делегирование на adminContent
+                        ac.addEventListener('click', adminClickHandler);
+                        // Кнопка добавления
+                        const addBtn = $('#addMemberManuallyBtn');
+                        if (addBtn) addBtn.addEventListener('click', () => { const name = prompt('ИМЯ ПЕРСОНАЖА:'); if (
+                                name) { const id = 'manual_' + Date.now();
+                                set(ref(db, `members/${id}`), { name, role: 'Обычный сотрудник', profession: 'Н/Д',
+                                    department: 'Н/Д', status: 'active', password: '', createdAt: Date.now() });
+                                toast('ДОБАВЛЕН');
+                                logAction(`Добавлен участник ${name}`);
+                                renderAdminTab('members'); } });
+                        break;
+                    case 'applications':
+                        const asnap = await get(ref(db, 'applications'));
+                        ac.innerHTML = '<h3>МОДЕРАЦИЯ АНКЕТ</h3>';
+                        if (asnap.exists()) {
+                            const data = asnap.val();
+                            Object.keys(data).forEach(k => { const a = data[k]; if (a.status === 'pending') { const card =
+                                        document.createElement('div');
+                                    card.className = 'card';
+                                    card.innerHTML =
+                                        `<div class="card-title">${a.name||'БЕЗ ИМЕНИ'} [${a.status}]</div><div class="card-text">Должность: ${a.position||'Н/Д'} | Отдел: ${a.department||'Н/Д'}<br>Раса: ${a.race||'Н/Д'} | Пол: ${a.gender||'Н/Д'}<br>Биография: ${a.bio||'Нет'}</div><button class="btn small success approveAppBtn" data-id="${k}">✓ ОДОБРИТЬ</button> <button class="btn small danger rejectAppBtn" data-id="${k}">✗ ОТКЛОНИТЬ</button>`;
+                                    ac.appendChild(card); } }); } else { ac.innerHTML += '<p>Нет анкет.</p>'; }
+                        ac.addEventListener('click', adminClickHandler);
+                        break;
+                    case 'dossiers':
+                        const dsnap = await get(ref(db, 'dossiers'));
+                        ac.innerHTML = '<h3>РЕДАКТИРОВАНИЕ ДОСЬЕ</h3>';
+                        if (dsnap.exists()) { const data = dsnap.val();
+                            Object.keys(data).forEach(k => { const d = data[k];
+                                ac.innerHTML +=
+                                    `<div class="card"><div class="card-title">${d.name||'БЕЗ ИМЕНИ'}</div><button class="btn small editDossierAdminBtn" data-id="${k}">✎ РЕДАКТИРОВАТЬ</button></div>`; }); } else { ac.innerHTML +=
+                                '<p>Досье нет.</p>'; }
+                        ac.addEventListener('click', adminClickHandler);
+                        break;
+                    case 'pages':
+                        ac.innerHTML = `
+            <h3>РЕДАКТОР СТРАНИЦ</h3>
+            <button class="btn" id="editStatusPageBtn">СТАТУС</button>
+            <button class="btn" id="editDataPageBtn">ДАННЫЕ</button>
+            <button class="btn" id="editProtocolPageBtn">ПРОТОКОЛ</button>
+            <button class="btn" id="editContactsPageBtn">СВЯЗЬ</button>`;
+                        $('#editStatusPageBtn').addEventListener('click', () => openEditor('status', 'СТАТУС'));
+                        $('#editDataPageBtn').addEventListener('click', () => openEditor('data', 'ДАННЫЕ'));
+                        $('#editProtocolPageBtn').addEventListener('click', () => openEditor('protocol', 'ПРОТОКОЛ'));
+                        $('#editContactsPageBtn').addEventListener('click', () => openEditor('contacts', 'СВЯЗЬ'));
+                        break;
+                    case 'gallery':
+                        const gsnap = await get(ref(db, 'archive'));
+                        ac.innerHTML = '<h3>УПРАВЛЕНИЕ ГАЛЕРЕЕЙ</h3>';
+                        if (gsnap.exists()) { const data = gsnap.val();
+                            Object.keys(data).forEach(k => { const f = data[k];
+                                ac.innerHTML +=
+                                    `<div class="card"><span>${f.name||'ФАЙЛ'}</span> <a href="${f.url}" target="_blank" rel="noopener" style="color:var(--accent);">ОТКРЫТЬ</a> <button class="btn small danger delArchiveBtn" data-id="${k}">✗</button></div>`; }); } else { ac.innerHTML +=
+                                '<p>Файлов нет.</p>'; }
+                        ac.addEventListener('click', adminClickHandler);
+                        break;
+                    case 'records':
+                        ac.innerHTML = `
+            <h3>УПРАВЛЕНИЕ ЗАПИСЯМИ</h3>
+            <button class="btn viewRecBtn" data-section="laboratory">ЛАБОРАТОРИЯ</button>
+            <button class="btn viewRecBtn" data-section="medbay">МЕДОТСЕК</button>
+            <button class="btn viewRecBtn" data-section="armory">КХО</button>
+            <div id="recordsView"></div>`;
+                        ac.addEventListener('click', async (e) => { const btn = e.target.closest('.viewRecBtn'); if (!btn)
+                                return; const section = btn.dataset.section; const snap = await get(ref(db, section)); let
+                                h = `<h4>${section.toUpperCase()}</h4>`; if (snap.exists()) { const data = snap.val();
+                                    Object.keys(data).forEach(k => { const r = data[k];
+                                        h +=
+                                            `<div class="card"><div class="card-title">${r.title}</div><button class="btn small danger delRecBtn" data-section="${section}" data-id="${k}">✗</button></div>`; }); } else { h +=
+                                        '<p>Нет записей.</p>'; }
+                                $('#recordsView').innerHTML = h;
+                                $('#recordsView').addEventListener('click', async (ev) => { const dbtn = ev.target
+                                        .closest('.delRecBtn'); if (!dbtn) return; await remove(ref(db,
+                                            `${dbtn.dataset.section}/${dbtn.dataset.id}`));
+                                        toast('УДАЛЕНО');
+                                        logAction(`Удалена запись из ${dbtn.dataset.section}`);
+                                        btn.click(); }); });
+                        break;
+                    case 'mailchat':
+                        const msnap = await get(ref(db, 'mail'));
+                        const csnap = await get(ref(db, 'chat'));
+                        ac.innerHTML = '<h3>ПОЧТА</h3>';
+                        if (msnap.exists()) { const data = msnap.val();
+                            Object.keys(data).forEach(k => { const m = data[k];
+                                ac.innerHTML +=
+                                    `<div class="card"><div class="card-title">ОТ: ${m.from} → ${m.to||'ВСЕМ'}</div><div class="card-text">${m.content||''}</div><button class="btn small danger delMailBtn" data-id="${k}">✗</button></div>`; }); } else { ac.innerHTML +=
+                                '<p>Писем нет.</p>'; }
+                        ac.innerHTML += '<h3 style="margin-top:20px;">ЧАТ</h3>';
+                        if (csnap.exists()) { const data = csnap.val();
+                            Object.keys(data).forEach(k => { const m = data[k];
+                                ac.innerHTML +=
+                                    `<div class="card"><small>${m.sender}: ${m.text}</small> <button class="btn small danger delChatBtn" data-id="${k}">✗</button></div>`; }); } else { ac.innerHTML +=
+                                '<p>Сообщений нет.</p>'; }
+                        ac.addEventListener('click', adminClickHandler);
+                        break;
+                    case 'logs':
+                        const lsnap = await get(ref(db, 'logs'));
+                        ac.innerHTML =
+                            '<h3>ЛОГИ</h3><div class="filter-row"><input class="input" id="logFilter" placeholder="ФИЛЬТР ПО ТИПУ..."><button class="btn small" id="logFilterBtn">ПРИМЕНИТЬ</button><button class="btn small" id="logClearBtn">ОЧИСТИТЬ ВСЕ</button></div><div id="logList"></div>';
+                        const renderLogs = (filter = '') => { const logList = $('#logList'); if (lsnap.exists()) { let
+                                logs = Object.values(lsnap.val()).sort((a, b) => b.timestamp - a.timestamp); if (
+                                    filter) { logs = logs.filter(l => l.action.toLowerCase().includes(filter
+                                    .toLowerCase())); }
+                                logList.innerHTML = logs.slice(0, 100).map(l =>
+                                    `<div class="card"><small>${new Date(l.timestamp).toLocaleString()}</small> — ${l.action} (${l.user||'—'})</div>`
+                                    ).join(''); } else { logList.innerHTML = '<p>Логов нет.</p>'; } };
+                        renderLogs();
+                        $('#logFilterBtn').addEventListener('click', () => renderLogs($('#logFilter').value));
+                        $('#logClearBtn').addEventListener('click', async () => { if (confirm('УДАЛИТЬ ВСЕ ЛОГИ?')) { await
+                                    set(ref(db, 'logs'), null);
+                                    toast('ЛОГИ ОЧИЩЕНЫ');
+                                    renderAdminTab('logs'); } });
+                        break;
+                    case 'warnings':
+                        const wsnap = await get(ref(db, 'warnings'));
+                        ac.innerHTML =
+                            '<h3>ПРЕДУПРЕЖДЕНИЯ</h3><button class="btn" id="addWarningBtn">+ ВЫНЕСТИ ПРЕДУПРЕЖДЕНИЕ</button><br><br><div id="warnList"></div>';
+                        const renderWarnings = () => { const wl = $('#warnList');
+                            wl.innerHTML = ''; if (wsnap.exists()) { const data = wsnap.val();
+                                Object.keys(data).forEach(k => { const w = data[k];
+                                    wl.innerHTML +=
+                                        `<div class="card"><div class="card-title">${w.memberName||'Н/Д'} — <span class="badge ${w.count>=3?'danger':'warn'}">${w.count||0}/3</span></div><div class="card-text">${w.reason||''}</div><button class="btn small danger removeWarnBtn" data-id="${k}">СНЯТЬ</button></div>`; }); } else { wl.innerHTML =
+                                        '<p>Предупреждений нет.</p>'; }
+                            wl.addEventListener('click', async (e) => { const btn = e.target.closest('.removeWarnBtn'); if (
+                                    !btn) return; await remove(ref(db, `warnings/${btn.dataset.id}`));
+                                    toast('СНЯТО');
+                                    renderWarnings(); }); };
+                        renderWarnings();
+                        $('#addWarningBtn').addEventListener('click', () => { const modal = document.createElement('div');
+                            modal.className = 'modal-overlay active';
+                            modal.innerHTML = `
+              <div class="panel modal"><div class="panel-inner">
+                <div class="modal-title">ВЫНЕСТИ ПРЕДУПРЕЖДЕНИЕ</div>
+                <div class="form-group"><label class="form-label">Персонаж</label><select class="select w-full" id="warnMember">${state.members.filter(m=>m.status==='active').map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select></div>
+                <div class="form-group"><label class="form-label">Причина</label><textarea class="textarea w-full" id="warnReason"></textarea></div>
+                <button class="btn full-width" id="submitWarnBtn">■ ВЫНЕСТИ</button>
+                <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
+              </div></div>`;
+                            document.body.appendChild(modal);
+                            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
+                            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+                            modal.querySelector('#submitWarnBtn').addEventListener('click', async () => { const mid =
+                                    modal.querySelector('#warnMember').value; const reason = modal.querySelector(
+                                        '#warnReason').value; const member = state.members.find(m => m.id ===
+                                    mid); const existingSnap = await get(ref(db, `warnings/${mid}`)); let count =
+                                    1; if (existingSnap.exists()) { count = existingSnap.val().count + 1; }
+                                await set(ref(db, `warnings/${mid}`), { memberId: mid, memberName: member?.name ||
+                                        mid, reason, count, timestamp: Date.now() }); if (count >= 3) { await
+                                        update(ref(db, `members/${mid}`), { status: 'banned' });
+                                    toast('ПЕРСОНАЖ ЗАБАНЕН (3 ПРЕДУПРЕЖДЕНИЯ)'); } else { toast(
+                                        `ПРЕДУПРЕЖДЕНИЕ ВЫНЕСЕНО (${count}/3)`); }
+                                logAction(`Предупреждение ${member?.name}: ${reason}`);
+                                modal.remove();
+                                renderWarnings(); }); });
+                        break;
+                    case 'calendar':
+                        const esnap = await get(ref(db, 'events'));
+                        ac.innerHTML =
+                            '<h3>КАЛЕНДАРЬ СОБЫТИЙ</h3><button class="btn" id="addEventBtn">+ ДОБАВИТЬ СОБЫТИЕ</button><br><br><div id="eventList"></div>';
+                        const renderEvents = () => { const el = $('#eventList');
+                            el.innerHTML = ''; if (esnap.exists()) { const data = esnap.val();
+                                Object.keys(data).forEach(k => { const e = data[k];
+                                    el.innerHTML +=
+                                        `<div class="card"><div class="card-title">📅 ${e.title||'СОБЫТИЕ'}</div><div class="card-text">${new Date(e.date).toLocaleDateString()} — ${e.desc||''}</div><button class="btn small danger delEventBtn" data-id="${k}">✗</button></div>`; });
+                                el.addEventListener('click', async (ev) => { const btn = ev.target.closest(
+                                        '.delEventBtn'); if (!btn) return; await remove(ref(db,
+                                            `events/${btn.dataset.id}`));
+                                        toast('УДАЛЕНО');
+                                        renderEvents(); }); } else { el.innerHTML = '<p>Событий нет.</p>'; } };
+                        renderEvents();
+                        $('#addEventBtn').addEventListener('click', () => { const modal = document.createElement('div');
+                            modal.className = 'modal-overlay active';
+                            modal.innerHTML = `
+              <div class="panel modal"><div class="panel-inner">
+                <div class="modal-title">НОВОЕ СОБЫТИЕ</div>
+                <div class="form-group"><label class="form-label">Название</label><input class="input w-full" id="eventTitle"></div>
+                <div class="form-group"><label class="form-label">Дата</label><input type="date" class="input w-full" id="eventDate"></div>
+                <div class="form-group"><label class="form-label">Описание</label><textarea class="textarea w-full" id="eventDesc"></textarea></div>
+                <button class="btn full-width" id="submitEventBtn">■ СОХРАНИТЬ</button>
+                <button class="btn full-width cancelModalBtn" style="margin-top:8px;">◀ ОТМЕНА</button>
+              </div></div>`;
+                            document.body.appendChild(modal);
+                            modal.querySelector('.cancelModalBtn').addEventListener('click', () => modal.remove());
+                            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+                            modal.querySelector('#submitEventBtn').addEventListener('click', async () => { const evt = {
+                                    title: modal.querySelector('#eventTitle').value, date: new Date(modal
+                                        .querySelector('#eventDate').value).getTime(), desc: modal.querySelector(
+                                        '#eventDesc').value, createdAt: Date.now() }; if (!evt.title) { toast(
+                                        'ВВЕДИТЕ НАЗВАНИЕ'); return; }
+                                await push(ref(db, 'events'), evt);
+                                toast('СОБЫТИЕ ДОБАВЛЕНО');
+                                logAction(`Добавлено событие: ${evt.title}`);
+                                modal.remove();
+                                renderEvents(); }); });
+                        break;
+                    case 'backup':
+                        ac.innerHTML =
+                            '<h3>БЭКАП БАЗЫ ДАННЫХ</h3><button class="btn" id="exportDbBtn">📥 ЭКСПОРТ JSON</button> <button class="btn" id="importDbBtn">📤 ИМПОРТ JSON</button><input type="file" id="importFileInput" accept=".json" style="display:none;">';
+                        $('#exportDbBtn').addEventListener('click', async () => { const rootSnap = await get(ref(db,
+                                    '/')); const data = rootSnap.exists() ? rootSnap.val() : {}; const blob = new Blob([
+                                    JSON.stringify(data, null, 2)
+                                ], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a =
+                                document.createElement('a');
+                            a.href = url;
+                            a.download = 'srvl-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+                            a.click();
+                            URL.revokeObjectURL(url);
+                            toast('БЭКАП СКАЧАН');
+                            logAction('Экспорт базы данных'); });
+                        $('#importDbBtn').addEventListener('click', () => $('#importFileInput').click());
+                        $('#importFileInput').addEventListener('change', async (e) => { const file = e.target.files[0]; if (
+                                !file) return; if (!confirm('ИМПОРТ ЗАМЕНИТ ВСЕ ДАННЫЕ. ПРОДОЛЖИТЬ?')) return; const
+                                reader = new FileReader();
+                            reader.onload = async (ev) => { try { const data = JSON.parse(ev.target.result); await set(
+                                        ref(db, '/'), data);
+                                    toast('БАЗА ИМПОРТИРОВАНА');
+                                    logAction('Импорт базы данных');
+                                    location.reload(); } catch (err) { toast('ОШИБКА ЧТЕНИЯ ФАЙЛА');
+                                    sfxError(); } };
+                            reader.readAsText(file); });
+                        break;
+                    case 'import':
+                        ac.innerHTML =
+                            '<h3>ИМПОРТ/ЭКСПОРТ УЧАСТНИКОВ</h3><button class="btn" id="exportMembersBtn">📥 ЭКСПОРТ CSV</button> <button class="btn" id="importMembersBtn">📤 ИМПОРТ CSV</button><input type="file" id="importMembersFile" accept=".csv" style="display:none;">';
+                        $('#exportMembersBtn').addEventListener('click', async () => { await loadMembers(true); if (state
+                                .members.length === 0) { toast('НЕТ УЧАСТНИКОВ'); return; } let csv =
+                                'Имя,Роль,Профессия,Отдел,Статус\n';
+                            state.members.forEach(m => { csv +=
+                                    `${m.name||''},${m.role||''},${m.profession||''},${m.department||''},${m.status||''}\n`; }); const
+                                blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const
+                                a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'srvl-members-' + new Date().toISOString().slice(0, 10) + '.csv';
+                            a.click();
+                            URL.revokeObjectURL(url);
+                            toast('ЭКСПОРТ ГОТОВ'); });
+                        $('#importMembersBtn').addEventListener('click', () => $('#importMembersFile').click());
+                        $('#importMembersFile').addEventListener('change', async (e) => { const file = e.target.files[0]; if (
+                                !file) return; const reader = new FileReader();
+                            reader.onload = async (ev) => { const lines = ev.target.result.split('\n').filter(Boolean); if (
+                                    lines.length < 2) { toast('ПУСТОЙ ФАЙЛ'); return; } let count = 0; for (let i =
+                                    1; i < lines.length; i++) { const vals = lines[i].split(','); if (vals
+                                        .length < 5) continue; const id = 'import_' + Date.now() + '_' + i;
+                                    await set(ref(db, `members/${id}`), { name: vals[0], role: vals[1],
+                                        profession: vals[2], department: vals[3], status: vals[4], password: '',
+                                        createdAt: Date.now() });
+                                    count++; }
+                                toast(`ИМПОРТИРОВАНО: ${count} УЧАСТНИКОВ`);
+                                logAction(`Импорт ${count} участников`);
+                                renderAdminTab('members'); };
+                            reader.readAsText(file); });
+                        break;
+                    case 'dev':
+                        ac.innerHTML = `
+            <h3>DEV КОНСОЛЬ</h3>
+            <button class="btn" id="changeAdminPasswordBtn">СМЕНИТЬ ПАРОЛЬ АДМИНКИ</button>
+            <button class="btn danger" id="resetDbBtn" style="margin-top:10px;">СБРОС БАЗЫ (ОПАСНО)</button>
+            <div style="margin-top:15px;"><label class="form-label">Прямой JSON-редактор</label><textarea class="textarea w-full" id="devJsonEditor" style="min-height:200px;"></textarea><button class="btn" id="devJsonLoadBtn">ЗАГРУЗИТЬ</button><button class="btn" id="devJsonSaveBtn">СОХРАНИТЬ</button></div>`;
+                        $('#changeAdminPasswordBtn').addEventListener('click', () => { const np = prompt(
+                                'НОВЫЙ ПАРОЛЬ АДМИНКИ:'); if (np) { state.adminPassword = np;
+                                toast('ПАРОЛЬ СМЕНЁН');
+                                logAction('Сменён пароль админки'); } });
+                        $('#resetDbBtn').addEventListener('click', () => { if (confirm(
+                                    'ВЫ УВЕРЕНЫ? ВСЕ ДАННЫЕ БУДУТ УДАЛЕНЫ!')) { set(ref(db), null);
+                                    toast('БАЗА СБРОШЕНА');
+                                    logAction('Сброс базы данных'); } });
+                        $('#devJsonLoadBtn').addEventListener('click', async () => { const snap = await get(ref(db, '/'));
+                            $('#devJsonEditor').value = JSON.stringify(snap.exists() ? snap.val() : {}, null, 2); });
+                        $('#devJsonSaveBtn').addEventListener('click', async () => { try { const data = JSON.parse($(
+                                    '#devJsonEditor').value); if (confirm('СОХРАНИТЬ ИЗМЕНЕНИЯ?')) { await set(ref(
+                                        db, '/'), data);
+                                    toast('СОХРАНЕНО');
+                                    logAction('Прямое редактирование БД'); } } catch (e) { toast('ОШИБКА JSON'); } });
+                        break;
+                }
+            } catch (e) { ac.innerHTML = '<p style="color:var(--danger);">ОШИБКА ЗАГРУЗКИ</p>'; }
+        }
+
+        // ============ ОБРАБОТЧИК КЛИКОВ ДЛЯ АДМИН-ПАНЕЛИ (ДЕЛЕГИРОВАНИЕ) ============
+        function adminClickHandler(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+
+            // Сохранить участника
+            if (btn.classList.contains('saveMemberBtn')) {
+                const id = btn.dataset.id;
+                const card = btn.closest('.card');
+                const role = card.querySelector('.roleSelect').value;
+                const prof = card.querySelector('.profInput').value;
+                const dept = card.querySelector('.deptInput').value;
+                update(ref(db, `members/${id}`), { role, profession: prof, department: dept });
+                toast('СОХРАНЕНО');
+                logAction(`Изменён участник ${id}`);
+            }
+            // Сброс пароля
+            if (btn.classList.contains('resetPassBtn')) {
+                if (confirm('СБРОСИТЬ ПАРОЛЬ?')) {
+                    update(ref(db, `members/${btn.dataset.id}`), { password: '' });
+                    toast('ПАРОЛЬ СБРОШЕН');
+                    logAction(`Сброшен пароль ${btn.dataset.id}`);
+                }
+            }
+            // Удалить участника
+            if (btn.classList.contains('deleteMemberBtn')) {
+                if (confirm('УДАЛИТЬ УЧАСТНИКА?')) {
+                    update(ref(db, `members/${btn.dataset.id}`), { status: 'deleted' });
+                    toast('УДАЛЁН');
+                    logAction(`Удалён участник ${btn.dataset.id}`);
+                    renderAdminTab('members');
+                }
+            }
+            // Одобрить анкету
+            if (btn.classList.contains('approveAppBtn')) {
+                const id = btn.dataset.id;
+                get(ref(db, `applications/${id}`)).then(snap => { if (snap.exists()) approveApp(id, snap.val()); });
+            }
+            // Отклонить анкету
+            if (btn.classList.contains('rejectAppBtn')) {
+                rejectApp(btn.dataset.id);
+            }
+            // Редактировать досье из админки
+            if (btn.classList.contains('editDossierAdminBtn')) {
+                const id = btn.dataset.id;
+                get(ref(db, `dossiers/${id}`)).then(snap => { if (snap.exists()) openDossierEditor(id, snap.val()); });
+            }
+            // Удалить из галереи
+            if (btn.classList.contains('delArchiveBtn')) {
+                remove(ref(db, `archive/${btn.dataset.id}`));
+                toast('УДАЛЕНО');
+                logAction('Удалён файл из галереи');
+                renderAdminTab('gallery');
+            }
+            // Удалить письмо
+            if (btn.classList.contains('delMailBtn')) {
+                remove(ref(db, `mail/${btn.dataset.id}`));
+                toast('УДАЛЕНО');
+                logAction('Удалено письмо');
+                renderAdminTab('mailchat');
+            }
+            // Удалить сообщение чата
+            if (btn.classList.contains('delChatBtn')) {
+                remove(ref(db, `chat/${btn.dataset.id}`));
+                toast('УДАЛЕНО');
+                logAction('Удалено сообщение чата');
+                renderAdminTab('mailchat');
+            }
+        }
+
+        async function approveApp(id, data) { try { const memberRef = ref(db, `members/${id}`); await set(memberRef, { name: data
+                    .name, role: 'Обычный сотрудник', profession: data.position || 'Н/Д', department: data.department ||
+                    'Н/Д', status: 'active', password: '', createdAt: Date.now() }); await set(ref(db, `dossiers/${id}`),
+                data); await update(ref(db, `applications/${id}`), { status: 'approved' });
+                toast('АНКЕТА ОДОБРЕНА');
+                sfxUnlock();
+                logAction(`Одобрена анкета: ${data.name}`);
+                state.membersLoaded = false;
+                renderAdminTab('applications'); } catch (e) { toast('ОШИБКА');
+                sfxError(); } }
+        async function rejectApp(id) { try { await update(ref(db, `applications/${id}`), { status: 'rejected' });
+                toast('АНКЕТА ОТКЛОНЕНА');
+                logAction(`Отклонена анкета: ${id}`);
+                renderAdminTab('applications'); } catch (e) { toast('ОШИБКА'); } }
+        async function logAction(action) { try { await push(ref(db, 'logs'), { action, timestamp: Date.now(), user: state
+                    .currentUser?.name || 'ГОСТЬ' }); const snap = await get(ref(db, 'logs')); if (snap.exists()) { const
+                    data = snap.val(); const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+                    Object.keys(data).forEach(k => { if (data[k].timestamp < cutoff) remove(ref(db, `logs/${k}`)).catch(
+                            () => {}); }); } } catch (e) {} }
+
+        // ============ ХОТКЕИ ============
+        window.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (document.activeElement === $('#chatInput'))
+                    return; if (loginModal.classList.contains('active')) $('#loginBtn').click(); else if ($('#accessBtn').style
+                    .display === 'block' && !mainInterface.classList.contains('active')) openLoginModal(); } if (e.key ===
+                'Escape') { if (loginModal.classList.contains('active')) closeLoginModal(); if (sidebar.classList.contains(
+                    'open')) sidebar.classList.remove('open'); } });
+        window.addEventListener('resize', () => { canvas.width = innerWidth;
+            canvas.height = innerHeight; });
+
+        // ============ СТАРТ ============
+        const visited = sessionStorage.getItem('srvl-visited'); if (visited) { $('#skipBtn').style.display = 'block';
+            $('#skipBtn').textContent = '▶ ПРОПУСТИТЬ (ВХОД)'; }
+        startAnimation();
+        sessionStorage.setItem('srvl-visited', '1');
+        logAction('ЗАПУСК ТЕРМИНАЛА');
+    </script>
+</body>
+</html>
